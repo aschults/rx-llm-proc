@@ -1,0 +1,102 @@
+[project]
+name = "rxllmproc"
+version = "0.1.0"
+dependencies = [
+    "google_auth_oauthlib",
+    "google-api-python-client",
+    "python-dateutil",
+    "absl-py",
+    "google-api-python-client-stubs",
+    "dacite",
+    "reactivex",
+    "jsonpickle",
+    "markdownify",
+    "python-dateutil",
+    "google-genai",
+    "jinja2",
+    "pyyaml",
+    "linkify-it-py",
+    "markdown-it-py",
+    "SQLAlchemy",
+    "mcp",
+    "typing_extensions",
+]
+authors = [
+    {name = "Anton Schultschik", email = "aschults@gmx.net"},
+]
+description = "Tools to leverage LLMs in daily work, e.g. GMail, Tasks,..."
+readme = "README.md"
+requires-python = ">=3.7"
+keywords = ["one", "two"]
+
+[build-system]
+requires = ["setuptools>=40.8.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["rxllmproc*"]
+namespaces = true
+
+[project.scripts]
+conversion_cli = "rxllmproc.cli.conversion_cli:main"
+docs_cli = "rxllmproc.cli.docs_cli:main"
+gdrive_cli = "rxllmproc.cli.gdrive_cli:main"
+gmail_cli = "rxllmproc.cli.gmail_cli:main"
+llm_cli = "rxllmproc.cli.llm_cli:main"
+mail_categorizer_cli = "rxllmproc.cli.mail_categorizer_cli:main"
+sheets_cli = "rxllmproc.cli.sheets_cli:main"
+tasks_cli = "rxllmproc.cli.tasks_cli:main"
+template_cli = "rxllmproc.cli.template_cli:main"
+
+
+
+[project.optional-dependencies]
+testing = [
+    "coverage>=5.0.3",
+    "pytest",
+    "pycodestyle",
+    "pydocstyle",
+    "pytest-cov",
+    "parameterized",
+    "pyfakefs",
+    "types-mock",
+    "pytest-pythonpath",
+    "requests-mock",
+    "google-auth-stubs",
+    "types-beautifulsoup4",
+    "flake8",
+]
+
+[tool.pytest.ini_options]
+pythonpath=[".","tests"]
+
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = [
+    "tests",
+]
+
+[tool.pyright]
+include = ["rxllmproc/**", "tests/**"]
+# strict = ["rxllmproc", "tests"]
+# stubPath = "./typings"
+typeCheckingMode = "strict"
+venv = ".venv"
+# venvPath = "."
+useLibraryCodeForTypes = true
+reportPropertyTypeMismatch = "warning"
+reportImportCycles = "warning"
+reportUnusedImport = "error"
+reportDuplicateImport = "error"
+reportUnusedVariable = "error"
+reportUnusedFunction = "error"
+reportUnusedClass = "error"
+strictSetInference = true
+strictDictionaryInference = true
+strictListInference = true 
+extraPaths = ["tests"]
+
+
+[tool.black]
+line-length = 80
+skip-string-normalization = true
