@@ -144,16 +144,14 @@ sure you read the sections on <a href="#privacy">Privacy</a> and
 
 - **GMail: Fetching messages**\
   Retrieve emails matching a specific query.
-  - Related Docs: [GmailCLI](docs/cli/GmailCLI.md),
-    [GmailQuery](docs/py/GmailQuery.md)
+  - Related Docs: [GmailCLI](docs/cli/GmailCLI.md)
 - **GDrive: Download/upload files**\
   Download or upload/update a document by name or ID.
   - Related Docs: [GdriveCLI](docs/cli/GdriveCLI.md)
 - **Tasks: Fetching & Managing tasks**\
   Retrieve all Google Tasks or tasks from a specific list. (Future: Create new
   tasks).
-  - Related Docs: [TasksCLI](docs/cli/TasksCLI.md),
-    [TaskListLoader](docs/py/TaskListLoader.md)
+  - Related Docs: [TasksCLI](docs/cli/TasksCLI.md)
 - **Sheets: Fetching Sheets data**\
   Retrieve data from a Google Sheet (whole sheets or specific ranges).
   - Related Docs: [SheetsCLI](docs/cli/SheetsCLI.md)
