@@ -10,7 +10,6 @@ import dataclasses
 import dacite
 
 from rxllmproc.cli import cli_base
-from rxllmproc.cli.cli_base import require_arg
 from rxllmproc.app.mail import index, categorizer, types
 
 
@@ -152,7 +151,9 @@ class MailCategorizerCli(cli_base.CliBase):
 
     def _run_categorize(self):
         """Handles the 'categorize' command."""
-        prompt_template = self.expand_arg(require_arg(self.prompt, "prompt"))
+        prompt_template = self.expand_arg(
+            cli_base.require_arg(self.prompt, "prompt")
+        )
 
         # 1. Initialize LLM Clients
         llm_registry = self.plugins.llm_registry
@@ -182,18 +183,22 @@ class MailCategorizerCli(cli_base.CliBase):
                 "Refining categories enabled using %s", self.refine_prompt
             )
 
-        index_dir = os.path.dirname(require_arg(self.index_file, "index_file"))
+        index_dir = os.path.dirname(
+            cli_base.require_arg(self.index_file, "index_file")
+        )
         index_manager = index.GmailIndexManager(index_dir)
 
         categorized_index_dict = self._load_json_as_dict(
-            require_arg(self.categorized_index_file, "categorized_index_file")
+            cli_base.require_arg(
+                self.categorized_index_file, "categorized_index_file"
+            )
         )
 
         def _intermediate_save(
             categorized_index_dict: dict[str, types.MailSource],
         ):
             self._save_dict_as_json_list(
-                require_arg(
+                cli_base.require_arg(
                     self.categorized_index_file, "categorized_index_file"
                 ),
                 categorized_index_dict,
@@ -202,7 +207,7 @@ class MailCategorizerCli(cli_base.CliBase):
         categorizer.MailCategorize(
             prompt_template=prompt_template,
             model=model_instance,
-            emails_dir=require_arg(self.emails_dir, "emails_dir"),
+            emails_dir=cli_base.require_arg(self.emails_dir, "emails_dir"),
             refine_prompt_template=refine_prompt_template,
             refine_model=refine_model_instance,
             prompt_params=prompt_params,

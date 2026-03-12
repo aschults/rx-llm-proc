@@ -5,9 +5,9 @@ import threading
 from typing import TypeVar, Any, Callable
 
 import reactivex as rx
-from reactivex import Observer, Observable, operators as ops
-from reactivex.abc.observer import ObserverBase
-from reactivex.disposable import Disposable
+from reactivex import operators as ops
+from reactivex.abc import observer as abc_observer
+from reactivex import disposable
 import sqlalchemy
 import sqlalchemy.orm
 from rxllmproc.database import api as database
@@ -15,7 +15,7 @@ from rxllmproc.database import api as database
 _T = TypeVar("_T")
 
 
-class Inserter(Observer[_T]):
+class Inserter(rx.Observer[_T]):
     """Observer that inserts items into a database transaction."""
 
     def __init__(self, transaction: 'BaseTransaction') -> None:
@@ -51,7 +51,7 @@ class Inserter(Observer[_T]):
             self.on_error(e)
 
 
-class Upserter(Observer[_T]):
+class Upserter(rx.Observer[_T]):
     """Observer that upserts items into a database transaction."""
 
     def __init__(self, transaction: 'BaseTransaction') -> None:
@@ -90,7 +90,7 @@ class Upserter(Observer[_T]):
 def insert_op(
     transaction: "BaseTransaction",
     _: type[_T],
-) -> Callable[[Observable[_T]], Observable[_T]]:
+) -> Callable[[rx.Observable[_T]], rx.Observable[_T]]:
     """Insert items into the database using the provided transaction.
 
     Args:
@@ -100,7 +100,7 @@ def insert_op(
         An operator function.
     """
 
-    def _insert(source: Observable[_T]) -> Observable[_T]:
+    def _insert(source: rx.Observable[_T]) -> rx.Observable[_T]:
         first_element = True
 
         def _process(item: _T) -> _T:
@@ -125,7 +125,7 @@ def insert_op(
 def upsert_op(
     transaction: "BaseTransaction",
     _: type[_T],
-) -> Callable[[Observable[_T]], Observable[_T]]:
+) -> Callable[[rx.Observable[_T]], rx.Observable[_T]]:
     """Upsert items into the database using the provided transaction.
 
     Args:
@@ -135,7 +135,7 @@ def upsert_op(
         An operator function.
     """
 
-    def _upsert(source: Observable[_T]) -> Observable[_T]:
+    def _upsert(source: rx.Observable[_T]) -> rx.Observable[_T]:
         first_element = True
 
         def _process(item: _T) -> _T:
@@ -156,7 +156,7 @@ def upsert_op(
     return _upsert
 
 
-class QueryObservable(Observable[_T]):
+class QueryObservable(rx.Observable[_T]):
     """Observable that loads entities from a database query."""
 
     def __init__(
@@ -170,8 +170,8 @@ class QueryObservable(Observable[_T]):
         self._transaction = transaction
 
     def _subscribe(
-        self, observer: ObserverBase[_T], scheduler: Any = None
-    ) -> Disposable:
+        self, observer: abc_observer.ObserverBase[_T], scheduler: Any = None
+    ) -> disposable.Disposable:
         try:
             result = self._transaction.execute(self._query).scalars().all()
             for item in result:
@@ -179,7 +179,7 @@ class QueryObservable(Observable[_T]):
             observer.on_completed()
         except Exception as e:
             observer.on_error(e)
-        return Disposable()
+        return disposable.Disposable()
 
 
 def query_op(
@@ -189,7 +189,7 @@ def query_op(
         | Callable[[Any], sqlalchemy.sql.expression.Executable]
     ),
     _: type[_T],
-) -> Callable[[Observable[Any]], Observable[_T]]:
+) -> Callable[[rx.Observable[Any]], rx.Observable[_T]]:
     """Execute a query for each item in the source stream.
 
     Args:
@@ -202,8 +202,8 @@ def query_op(
         of query results.
     """
 
-    def _execute_query(source: Observable[Any]) -> Observable[_T]:
-        def _project(item: Any) -> Observable[_T]:
+    def _execute_query(source: rx.Observable[Any]) -> rx.Observable[_T]:
+        def _project(item: Any) -> rx.Observable[_T]:
             try:
                 actual_query = query(item) if callable(query) else query
                 return QueryObservable[_T](transaction, actual_query)
@@ -286,13 +286,13 @@ class BaseTransaction:
 
     def insert_op(
         self, class_: type[_T]
-    ) -> Callable[[Observable[_T]], Observable[_T]]:
+    ) -> Callable[[rx.Observable[_T]], rx.Observable[_T]]:
         """Create an insert operator."""
         return insert_op(self, class_)
 
     def upsert_op(
         self, class_: type[_T]
-    ) -> Callable[[Observable[_T]], Observable[_T]]:
+    ) -> Callable[[rx.Observable[_T]], rx.Observable[_T]]:
         """Create an upsert operator."""
         return upsert_op(self, class_)
 
@@ -302,7 +302,7 @@ class BaseTransaction:
 
     def query_op(
         self, query: Any, _type: type[_T]
-    ) -> Callable[[Observable[Any]], Observable[_T]]:
+    ) -> Callable[[rx.Observable[Any]], rx.Observable[_T]]:
         """Create a query operator."""
         return query_op(self, query, _type)
 

@@ -16,7 +16,7 @@ class TestDocsCli(unittest.TestCase):
         self.mock_wrapper = MagicMock()
         self.cli = docs_cli.DocsCli(docs_wrapper=self.mock_wrapper)
         self.cli.document_id = "test_doc"
-        self.document_patcher = patch("rxllmproc.cli.docs_cli.Document")
+        self.document_patcher = patch("rxllmproc.docs.docs_model.Document")
         self.mock_document_cls = self.document_patcher.start()
         self.addCleanup(self.document_patcher.stop)
         self.mock_doc_instance = self.mock_document_cls.return_value
@@ -37,7 +37,7 @@ class TestDocsCli(unittest.TestCase):
             1, "content", ensure_newline=False
         )
 
-    @patch("rxllmproc.cli.docs_cli.DocumentContent")
+    @patch("rxllmproc.docs.docs_model.DocumentContent")
     def test_get_nested(self, mock_doc_content_cls: mock.MagicMock):
         """Test get command with --nested flag."""
         self.cli.command = "get"

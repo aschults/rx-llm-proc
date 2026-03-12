@@ -3,7 +3,6 @@
 from typing import Callable, Any, Dict
 import reactivex as rx
 from reactivex import operators as ops
-from reactivex import Observable
 from rxllmproc.text_processing import jinja_processing
 from rxllmproc.core import environment
 
@@ -34,7 +33,7 @@ class TemplateBuilder:
         self._filters[name] = func
         return self
 
-    def create(self) -> Callable[[Observable[Any]], Observable[str]]:
+    def create(self) -> Callable[[rx.Observable[Any]], rx.Observable[str]]:
         """Create the operator."""
         processor = jinja_processing.JinjaProcessing()
 
@@ -50,8 +49,8 @@ class TemplateBuilder:
 
         processor.set_template(self._template)
 
-        def _render_template(source: Observable[Any]) -> Observable[str]:
-            def _process(item: Any) -> Observable[str]:
+        def _render_template(source: rx.Observable[Any]) -> rx.Observable[str]:
+            def _process(item: Any) -> rx.Observable[str]:
                 try:
                     if isinstance(item, dict):
                         return rx.just(processor.render(**item))

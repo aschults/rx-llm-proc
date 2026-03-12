@@ -19,8 +19,8 @@ import threading
 import jsonpickle  # type: ignore
 import logging
 
-from rxllmproc.core.infra.utilities import asdict
-from rxllmproc.core.infra.containers import Container
+from rxllmproc.core.infra import utilities
+from rxllmproc.core.infra import containers
 
 
 class CacheLoadError(Exception):
@@ -37,7 +37,7 @@ def _serialize_args(*args: Any, **kwargs: Any) -> Any:
         'args': args,
         'kwargs': kwargs,
     }
-    return asdict(value)
+    return utilities.asdict(value)
 
 
 def _calc_hash(value: Any) -> str:
@@ -502,7 +502,7 @@ class CacheManager:
 
     def __init__(
         self,
-        storage: Container,
+        storage: containers.Container,
         default_age: AgeSpec | None = None,
         prefix_age: dict[str, AgeSpec] | None = None,
     ) -> None:

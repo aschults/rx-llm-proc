@@ -7,7 +7,6 @@ from abc import ABC, abstractmethod
 
 import reactivex as rx
 import sqlalchemy
-from reactivex import Observable
 from reactivex import operators as ops
 
 from rxllmproc.docs import llm_updater
@@ -149,8 +148,8 @@ class MarkdownInserter(ABC):
     def _generate_edits(
         self,
     ) -> Callable[
-        [Observable[analysis_types.ActionItem]],
-        Observable[docs_operators.EditOperation],
+        [rx.Observable[analysis_types.ActionItem]],
+        rx.Observable[docs_operators.EditOperation],
     ]:
         pass
 
@@ -184,8 +183,8 @@ class MarkdownInserter(ABC):
         return x is not None
 
     def __call__(
-        self, source: Observable[analysis_types.ActionItem]
-    ) -> Observable[analysis_types.ActionItemPlacement]:
+        self, source: rx.Observable[analysis_types.ActionItem]
+    ) -> rx.Observable[analysis_types.ActionItemPlacement]:
         """Build the pipeline."""
         return source.pipe(
             ops.do_action(self._refresh_processed_placements),
@@ -233,8 +232,8 @@ class MarkdownIndexInserter(MarkdownInserter):
     def _generate_edits(
         self,
     ) -> Callable[
-        [Observable[analysis_types.ActionItem]],
-        Observable[docs_operators.EditOperation],
+        [rx.Observable[analysis_types.ActionItem]],
+        rx.Observable[docs_operators.EditOperation],
     ]:
         return ops.map(self._make_edit)
 
@@ -266,8 +265,8 @@ class MarkdownLlmInserter(MarkdownInserter):
     def _generate_edits(
         self,
     ) -> Callable[
-        [Observable[analysis_types.ActionItem]],
-        Observable[docs_operators.EditOperation],
+        [rx.Observable[analysis_types.ActionItem]],
+        rx.Observable[docs_operators.EditOperation],
     ]:
         return rx.compose(
             ops.map(self._make_update_item),

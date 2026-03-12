@@ -3,7 +3,6 @@
 from typing import Callable, Any, TypeVar
 import reactivex as rx
 from reactivex import operators as ops
-from reactivex import Observable
 from rxllmproc.core import environment
 
 _T = TypeVar("_T")
@@ -12,7 +11,7 @@ _T = TypeVar("_T")
 def generate_text(
     model: str | None = None,
     **kwargs: Any,
-) -> Callable[[Observable[str]], Observable[str]]:
+) -> Callable[[rx.Observable[str]], rx.Observable[str]]:
     """Generate text from an LLM based on the input.
 
     Args:
@@ -24,8 +23,8 @@ def generate_text(
     """
     llm = environment.shared().create_model(model, **kwargs)
 
-    def _generate_text(source: Observable[str]) -> Observable[str]:
-        def _process(item: str) -> Observable[str]:
+    def _generate_text(source: rx.Observable[str]) -> rx.Observable[str]:
+        def _process(item: str) -> rx.Observable[str]:
             try:
                 return rx.just(llm.query(item))
             except Exception as e:
@@ -39,7 +38,7 @@ def generate_text(
 def generate_json(
     model: str | None = None,
     **kwargs: Any,
-) -> Callable[[Observable[str]], Observable[Any]]:
+) -> Callable[[rx.Observable[str]], rx.Observable[Any]]:
     """Generate JSON from an LLM based on the input.
 
     Args:
@@ -51,8 +50,8 @@ def generate_json(
     """
     llm = environment.shared().create_model(model, **kwargs)
 
-    def _generate_json(source: Observable[str]) -> Observable[Any]:
-        def _process(item: str) -> Observable[Any]:
+    def _generate_json(source: rx.Observable[str]) -> rx.Observable[Any]:
+        def _process(item: str) -> rx.Observable[Any]:
             try:
                 return rx.just(llm.query_json(str(item)))
             except Exception as e:
@@ -67,7 +66,7 @@ def generate_object(
     result_type: type[_T],
     model: str | None = None,
     **kwargs: Any,
-) -> Callable[[Observable[str]], Observable[_T]]:
+) -> Callable[[rx.Observable[str]], rx.Observable[_T]]:
     """Generate a structured object from an LLM based on the input.
 
     Args:
@@ -80,8 +79,8 @@ def generate_object(
     """
     llm = environment.shared().create_model(model, **kwargs)
 
-    def _generate_object(source: Observable[str]) -> Observable[_T]:
-        def _process(item: Any) -> Observable[_T]:
+    def _generate_object(source: rx.Observable[str]) -> rx.Observable[_T]:
+        def _process(item: Any) -> rx.Observable[_T]:
             try:
                 return rx.just(llm.query_json_object(result_type, str(item)))
             except Exception as e:

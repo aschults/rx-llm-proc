@@ -6,7 +6,7 @@ import time
 import logging
 import atexit
 
-from reactivex import Observer, Observable, Subject, empty
+import reactivex as rx
 
 
 class Collector(Protocol):
@@ -25,12 +25,12 @@ class Collector(Protocol):
         """Record an exception for the key."""
 
     @property
-    def exception_observable(self) -> Observable[Exception]:
+    def exception_observable(self) -> rx.Observable[Exception]:
         """Return the observable for exceptions."""
         ...
 
     @property
-    def sample_observable(self) -> Observable[tuple[str, Any]]:
+    def sample_observable(self) -> rx.Observable[tuple[str, Any]]:
         """Return the observable for samples."""
         ...
 
@@ -63,14 +63,14 @@ class NoCollector(Collector):
         """Start the automated printing."""
 
     @property
-    def exception_observable(self) -> Observable[Exception]:
+    def exception_observable(self) -> rx.Observable[Exception]:
         """Return the observable for exceptions."""
-        return empty()
+        return rx.empty()
 
     @property
-    def sample_observable(self) -> Observable[tuple[str, Any]]:
+    def sample_observable(self) -> rx.Observable[tuple[str, Any]]:
         """Return the observable for samples."""
-        return empty()
+        return rx.empty()
 
 
 class MemoryCollector(threading.Thread, Collector):
@@ -85,8 +85,8 @@ class MemoryCollector(threading.Thread, Collector):
         self.samples: dict[str, Any] = {}
         self.period = period
 
-        self._exception_observable = Subject[Exception]()
-        self._sample_observable = Subject[tuple[str, Any]]()
+        self._exception_observable = rx.Subject[Exception]()
+        self._sample_observable = rx.Subject[tuple[str, Any]]()
 
     def touch(self, key: str):
         """Create the key."""
@@ -153,12 +153,12 @@ class MemoryCollector(threading.Thread, Collector):
             time.sleep(self.period)
 
     @property
-    def exception_observable(self) -> Observable[Exception]:
+    def exception_observable(self) -> rx.Observable[Exception]:
         """Return the observable for exceptions."""
         return self._exception_observable
 
     @property
-    def sample_observable(self) -> Observable[tuple[str, Any]]:
+    def sample_observable(self) -> rx.Observable[tuple[str, Any]]:
         """Return the observable for samples."""
         return self._sample_observable
 
@@ -166,7 +166,7 @@ class MemoryCollector(threading.Thread, Collector):
 _T = TypeVar('_T')
 
 
-class CollectingObserver(Observer[_T], Generic[_T]):
+class CollectingObserver(rx.Observer[_T], Generic[_T]):
     """Observer that reports into a collector."""
 
     def __init__(

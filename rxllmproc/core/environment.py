@@ -9,6 +9,7 @@ from reactivex import operators as ops
 
 from rxllmproc.core import auth
 from rxllmproc.gmail import api as gmail_api
+from rxllmproc.calendar import api as calendar_api
 from rxllmproc.llm import commons as llm_commons
 from rxllmproc.tasks import api as tasks_wrapper
 from rxllmproc.tasks.api import ManagedTasks
@@ -63,6 +64,7 @@ class Environment:
     def _clear_wrappers(self):
         """Clear all wrappers."""
         self._gmail_wrapper = None
+        self._calendar_wrapper = None
         self._tasks_wrapper = None
         self._managed_tasks = None
         self._docs_wrapper = None
@@ -77,6 +79,7 @@ class Environment:
         self._outer_environment: Optional['Environment'] = None
 
         self._gmail_wrapper: Optional[gmail_api.GMailWrap] = None
+        self._calendar_wrapper: Optional[calendar_api.CalendarWrap] = None
         self._tasks_wrapper: Optional[tasks_wrapper.TasksWrap] = None
         self._managed_tasks: Optional[ManagedTasks] = None
         self._docs_wrapper: Optional[docs_wrapper.DocsWrapper] = None
@@ -217,6 +220,15 @@ class Environment:
                 creds=self.creds,
             )
         return self._gmail_wrapper
+
+    @property
+    def calendar_wrapper(self) -> calendar_api.CalendarWrap:
+        """Get or create the Calendar wrapper."""
+        if self._calendar_wrapper is None:
+            self._calendar_wrapper = calendar_api.CalendarWrap(
+                creds=self.creds,
+            )
+        return self._calendar_wrapper
 
     @property
     def tasks_wrapper(self) -> tasks_wrapper.TasksWrap:

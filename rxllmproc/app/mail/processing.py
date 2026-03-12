@@ -6,7 +6,7 @@ import threading
 import reactivex as rx
 from reactivex import operators as ops
 from reactivex.internal import exceptions as rx_exc
-from reactivex.scheduler import ThreadPoolScheduler
+from reactivex import scheduler
 
 from rxllmproc.app import environment as app_environment
 from rxllmproc.database import operators as sql_operators
@@ -55,7 +55,7 @@ class MailProcessing:
         self.config = config
         self.pipeline_thread: threading.Thread | None = None
         self._stop_event = threading.Event()
-        self._scheduler = ThreadPoolScheduler(5)
+        self._scheduler = scheduler.ThreadPoolScheduler(5)
 
         if not self.config.gmail_query:
             raise ValueError("Query must be provided in the configuration.")

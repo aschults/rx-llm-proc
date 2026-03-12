@@ -3,7 +3,7 @@
 import dataclasses
 from typing import Any, Protocol
 
-from rxllmproc.tasks.types import Task, TaskList
+from rxllmproc.tasks import types as tasks_types
 
 
 @dataclasses.dataclass
@@ -12,7 +12,7 @@ class TaskResponse:
 
     kind: str
     etag: str
-    items: list[Task]
+    items: list[tasks_types.Task]
     nextPageToken: str | None = None
 
 
@@ -22,7 +22,7 @@ class TaskListResponse:
 
     kind: str
     etag: str
-    items: list[TaskList]
+    items: list[tasks_types.TaskList]
     nextPageToken: str | None = None
 
 

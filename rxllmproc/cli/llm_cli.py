@@ -12,7 +12,7 @@ import logging
 import re
 
 from rxllmproc.cli import cli_base
-from rxllmproc.core.auth import CredentialsFactory
+from rxllmproc.core import auth
 
 from rxllmproc.llm.commons import (
     BasicLlmFunction,
@@ -201,7 +201,7 @@ class LlmCli(cli_base.CommonFileOutputCli):
             action='append',
         )
 
-    def __init__(self, creds: CredentialsFactory | None = None) -> None:
+    def __init__(self, creds: auth.CredentialsFactory | None = None) -> None:
         """Construct the instance, allowing for mocks (testing)."""
         self.context_files_expanded: Set[str] = set()
         self.writeable_files_regex: list[re.Pattern[str]] = []

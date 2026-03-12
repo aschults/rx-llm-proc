@@ -7,9 +7,9 @@ from typing import Optional, Any, cast
 
 from rxllmproc.cli import cli_base
 from rxllmproc.tasks import types as tasks_types
-from rxllmproc.core.infra.utilities import asdict
-from rxllmproc.core.auth import CredentialsFactory
-from rxllmproc.tasks.api import ManagedTasks, TasksWrap
+from rxllmproc.core.infra import utilities
+from rxllmproc.core import auth
+from rxllmproc.tasks import api as tasks_api
 
 
 class TasksCli(cli_base.CommonFileOutputCli):
@@ -136,8 +136,8 @@ class TasksCli(cli_base.CommonFileOutputCli):
 
     def __init__(
         self,
-        creds: CredentialsFactory | None = None,
-        tasks_wrapper: TasksWrap | None = None,
+        creds: auth.CredentialsFactory | None = None,
+        tasks_wrapper: tasks_api.TasksWrap | None = None,
     ) -> None:
         """Construct the instance, allowing for mocks (testing)."""
         super().__init__(creds)
@@ -155,20 +155,20 @@ class TasksCli(cli_base.CommonFileOutputCli):
         self.include_plain: bool = False
 
         self._wrapper = tasks_wrapper
-        self._managed_tasks: Optional[ManagedTasks] = None
+        self._managed_tasks: Optional[tasks_api.ManagedTasks] = None
 
     @property
-    def wrapper(self) -> TasksWrap:
+    def wrapper(self) -> tasks_api.TasksWrap:
         """Get the Tasks wrapper."""
         if self._wrapper is None:
-            self._wrapper = TasksWrap(self._get_credentials())
+            self._wrapper = tasks_api.TasksWrap(self._get_credentials())
         return self._wrapper
 
     @property
-    def managed_tasks(self) -> ManagedTasks:
+    def managed_tasks(self) -> tasks_api.ManagedTasks:
         """Get the ManagedTasks wrapper."""
         if self._managed_tasks is None:
-            self._managed_tasks = ManagedTasks(self.wrapper)
+            self._managed_tasks = tasks_api.ManagedTasks(self.wrapper)
         return self._managed_tasks
 
     def _run_list(self):
@@ -178,7 +178,7 @@ class TasksCli(cli_base.CommonFileOutputCli):
 
         if self.as_json:
             self.write_output(
-                json.dumps([asdict(task) for task in tasks], indent=2)
+                json.dumps([utilities.asdict(task) for task in tasks], indent=2)
             )
         else:
             for task in tasks:
@@ -192,7 +192,7 @@ class TasksCli(cli_base.CommonFileOutputCli):
 
         if self.as_json:
             self.write_output(
-                json.dumps([asdict(tl) for tl in tasklists], indent=2)
+                json.dumps([utilities.asdict(tl) for tl in tasklists], indent=2)
             )
         else:
             for tasklist in tasklists:
@@ -213,7 +213,7 @@ class TasksCli(cli_base.CommonFileOutputCli):
         )
         if self.dry_run:
             self._log_dry_run(f"Upserting managed task: {task.title}")
-            print(json.dumps(asdict(task), indent=2))
+            print(json.dumps(utilities.asdict(task), indent=2))
         else:
             self.managed_tasks.upsert_managed_task(task)
             logging.info(
@@ -250,7 +250,7 @@ class TasksCli(cli_base.CommonFileOutputCli):
 
         if self.dry_run:
             self._log_dry_run(f"Updating task: {task_to_update.id}")
-            print(json.dumps(asdict(task_to_update), indent=2))
+            print(json.dumps(utilities.asdict(task_to_update), indent=2))
             return
 
         self.managed_tasks.upsert_managed_task(task_to_update)

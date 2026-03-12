@@ -47,9 +47,9 @@ class TestRxMailCategorizerCli(fake_filesystem_unittest.TestCase):
         self.cli.docs_config.todo_doc_id = "doc_id"
 
         with mock.patch(
-            "rxllmproc.cli.rx_mail_categorizer.MailProcessing"
+            "rxllmproc.cli.rx_mail_categorizer.mail_processing.MailProcessing"
         ) as mock_mail_proc_cls, mock.patch(
-            "rxllmproc.cli.rx_mail_categorizer.DocsProcessing"
+            "rxllmproc.cli.rx_mail_categorizer.docs_processing.DocsProcessing"
         ) as mock_docs_proc_cls, mock.patch(
             "rxllmproc.cli.rx_mail_categorizer.app_environment.RxEnvironment"
         ) as mock_env_cls:

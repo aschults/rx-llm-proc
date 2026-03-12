@@ -23,6 +23,7 @@ DEFAULT_SCOPES: Sequence[str] = [
     'https://www.googleapis.com/auth/tasks',
     'https://www.googleapis.com/auth/drive',
     'https://www.googleapis.com/auth/spreadsheets',
+    'https://www.googleapis.com/auth/calendar',
 ]
 
 SingleCredentialFactory = Callable[[str], Credentials | None]

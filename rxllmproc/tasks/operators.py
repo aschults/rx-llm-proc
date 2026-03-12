@@ -3,7 +3,6 @@
 from typing import Callable
 import reactivex as rx
 from reactivex import operators as ops
-from reactivex import Observable
 from rxllmproc.tasks import api as tasks_wrapper
 from rxllmproc.core import auth
 from rxllmproc.tasks import types as tasks_types
@@ -15,7 +14,8 @@ def upsert_managed_task(
     default_tasklist_id: str | None = None,
     creds: auth.Credentials | None = None,
 ) -> Callable[
-    [Observable[tasks_types.ManagedTask]], Observable[tasks_types.ManagedTask]
+    [rx.Observable[tasks_types.ManagedTask]],
+    rx.Observable[tasks_types.ManagedTask],
 ]:
     """Upsert a managed task based on the input.
 
@@ -33,11 +33,11 @@ def upsert_managed_task(
         managed_tasks = environment.shared().managed_tasks
 
     def _upsert_managed_task(
-        source: Observable[tasks_types.ManagedTask],
-    ) -> Observable[tasks_types.ManagedTask]:
+        source: rx.Observable[tasks_types.ManagedTask],
+    ) -> rx.Observable[tasks_types.ManagedTask]:
         def _process(
             item: tasks_types.ManagedTask,
-        ) -> Observable[tasks_types.ManagedTask]:
+        ) -> rx.Observable[tasks_types.ManagedTask]:
             try:
                 task = item
                 managed_tasks.upsert_managed_task(task, default_tasklist_id)

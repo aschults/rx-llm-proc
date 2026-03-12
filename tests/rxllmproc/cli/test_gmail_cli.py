@@ -9,7 +9,7 @@ from pyfakefs import fake_filesystem_unittest
 
 from rxllmproc.gmail import api as gmail_wrapper
 from rxllmproc.core import auth
-from rxllmproc.gmail.types import Message
+from rxllmproc.gmail import types as gmail_types
 from rxllmproc.cli import gmail_cli
 
 from test_support import fail_none
@@ -47,14 +47,16 @@ class TestGmailCli(fake_filesystem_unittest.TestCase):
         date: str = "Tue, 15 Feb 2024 10:00:00 +0100",
         snippet: str = "snippet",
         thread_id: str | None = None,
-    ) -> Message:
+    ) -> gmail_types.Message:
         msg = message.EmailMessage()
         msg["Subject"] = subject
         msg["From"] = sender
         msg["To"] = recipient
         msg["Date"] = date
 
-        gmail_msg = Message(id=msg_id, snippet=snippet, threadId=thread_id)
+        gmail_msg = gmail_types.Message(
+            id=msg_id, snippet=snippet, threadId=thread_id
+        )
         gmail_msg._parsed_msg = msg
         return gmail_msg
 

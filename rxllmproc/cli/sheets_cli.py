@@ -5,8 +5,8 @@ import json
 from typing import Dict, List, Iterable
 
 from rxllmproc.cli import cli_base
-from rxllmproc.core.auth import CredentialsFactory
-from rxllmproc.sheets.api import SheetsWrapper
+from rxllmproc.core import auth
+from rxllmproc.sheets import api as sheets_api
 from rxllmproc.sheets import types as sheets_types
 
 
@@ -83,8 +83,8 @@ class SheetsCli(cli_base.CommonFileOutputCli):
 
     def __init__(
         self,
-        creds: CredentialsFactory | None = None,
-        sheets_wrapper: SheetsWrapper | None = None,
+        creds: auth.CredentialsFactory | None = None,
+        sheets_wrapper: sheets_api.SheetsWrapper | None = None,
     ) -> None:
         """Construct the instance, allowing for mocks (testing)."""
         super().__init__(creds)
@@ -99,10 +99,10 @@ class SheetsCli(cli_base.CommonFileOutputCli):
         self.id: str | None = None
 
     @property
-    def wrapper(self) -> SheetsWrapper:
+    def wrapper(self) -> sheets_api.SheetsWrapper:
         """Get the Drive wrapper."""
         if self._wrapper is None:
-            self._wrapper = SheetsWrapper(self._get_credentials())
+            self._wrapper = sheets_api.SheetsWrapper(self._get_credentials())
         return self._wrapper
 
     def run(self):

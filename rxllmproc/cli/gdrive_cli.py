@@ -9,12 +9,12 @@ import sys
 import mimetypes
 import io
 
-from googleapiclient.errors import HttpError
+from googleapiclient import errors
 from rxllmproc.drive import types
 from rxllmproc.cli import cli_base
 from rxllmproc.text_processing import converters
-from rxllmproc.core.auth import CredentialsFactory
-from rxllmproc.drive.api import DriveWrap
+from rxllmproc.core import auth
+from rxllmproc.drive import api as drive_api
 
 
 class DriveFileNotFoundException(Exception):
@@ -190,7 +190,7 @@ class DriveCli(cli_base.CommonFileOutputCli):
         cli_base.CliBase._add_args(self)
 
     def _exception_to_status(self, e: Exception) -> Tuple[int, str] | None:
-        if isinstance(e, HttpError):
+        if isinstance(e, errors.HttpError):
             return 30, f'Could not get file: {e}'
         if isinstance(e, DriveFileNotFoundException):
             return 30, f'Drive file not found: {e}'
@@ -198,8 +198,8 @@ class DriveCli(cli_base.CommonFileOutputCli):
 
     def __init__(
         self,
-        creds: CredentialsFactory | None = None,
-        drive_wrap: DriveWrap | None = None,
+        creds: auth.CredentialsFactory | None = None,
+        drive_wrap: drive_api.DriveWrap | None = None,
     ) -> None:
         """Construct the instance, allowing for mocks (testing)."""
         super().__init__(creds)
@@ -224,10 +224,10 @@ class DriveCli(cli_base.CommonFileOutputCli):
         self._wrapper = drive_wrap
 
     @property
-    def wrapper(self) -> DriveWrap:
+    def wrapper(self) -> drive_api.DriveWrap:
         """Get the Drive wrapper."""
         if self._wrapper is None:
-            self._wrapper = DriveWrap(self._get_credentials())
+            self._wrapper = drive_api.DriveWrap(self._get_credentials())
         return self._wrapper
 
     def run_get_all(self):

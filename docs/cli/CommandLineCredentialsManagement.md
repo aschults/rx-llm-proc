@@ -53,6 +53,7 @@ files.
      "https://www.googleapis.com/auth/tasks"
      "https://www.googleapis.com/auth/drive"
      "https://www.googleapis.com/auth/spreadsheets"
+     "https://www.googleapis.com/auth/calendar"
    )
 
    # Login with the joined scopes

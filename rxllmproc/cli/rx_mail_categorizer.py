@@ -9,8 +9,8 @@ from rxllmproc.app.mail import types as mail_types
 from rxllmproc.core.infra import collector
 from rxllmproc.app import environment as app_environment
 from rxllmproc.database import operators as sql_operators
-from rxllmproc.app.mail.processing import MailProcessing
-from rxllmproc.app.docs.processing import DocsProcessing
+from rxllmproc.app.mail import processing as mail_processing
+from rxllmproc.app.docs import processing as docs_processing
 from rxllmproc.app.analysis import types as analysis_types
 from rxllmproc.gmail import types as gmail_types
 from rxllmproc.app.docs import types as docs_types
@@ -170,14 +170,16 @@ class RxMailCategorizerCli(cli_base.CliBase):
 
         mail_processor = None
         if self.mail_config.gmail_query:
-            mail_processor = MailProcessing(
+            mail_processor = mail_processing.MailProcessing(
                 env=env,
                 config=self.mail_config,
             )
 
         docs_processor = None
         if self.docs_config.todo_doc_id:
-            docs_processor = DocsProcessing(env=env, config=self.docs_config)
+            docs_processor = docs_processing.DocsProcessing(
+                env=env, config=self.docs_config
+            )
         else:
             logging.info("No todo_doc_id provided, skipping docs exporting.")
 

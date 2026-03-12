@@ -3,7 +3,6 @@
 from typing import Callable, Any
 import reactivex as rx
 from reactivex import operators as ops
-from reactivex import Observable
 from rxllmproc.gmail import types as gmail_types
 from rxllmproc.gmail import api as gmail_wrapper
 from rxllmproc.core import auth
@@ -14,7 +13,7 @@ def fetch_messages(
     query: str,
     creds: auth.Credentials | None = None,
     wrapper: gmail_wrapper.GMailWrap | None = None,
-) -> Callable[[Observable[Any]], Observable[gmail_types.Message]]:
+) -> Callable[[rx.Observable[Any]], rx.Observable[gmail_types.Message]]:
     """Fetch GMail messages based on a trigger from the source observable.
 
     Args:
@@ -32,9 +31,9 @@ def fetch_messages(
             wrapper = environment.shared().gmail_wrapper
 
     def _fetch_messages(
-        source: Observable[object],
-    ) -> Observable[gmail_types.Message]:
-        def _search_and_expand(_: Any) -> Observable[gmail_types.Message]:
+        source: rx.Observable[object],
+    ) -> rx.Observable[gmail_types.Message]:
+        def _search_and_expand(_: Any) -> rx.Observable[gmail_types.Message]:
             try:
                 return rx.from_iterable(wrapper.search_expand(query))
             except Exception as e:
@@ -49,7 +48,7 @@ def fetch_ids(
     query: str,
     creds: auth.Credentials | None = None,
     wrapper: gmail_wrapper.GMailWrap | None = None,
-) -> Callable[[Observable[object]], Observable[gmail_types.MessageId]]:
+) -> Callable[[rx.Observable[object]], rx.Observable[gmail_types.MessageId]]:
     """Fetch GMail message IDs based on a trigger from the source observable.
 
     Args:
@@ -67,9 +66,9 @@ def fetch_ids(
             wrapper = environment.shared().gmail_wrapper
 
     def _fetch_ids(
-        source: Observable[object],
-    ) -> Observable[gmail_types.MessageId]:
-        def _search(_: Any) -> Observable[gmail_types.MessageId]:
+        source: rx.Observable[object],
+    ) -> rx.Observable[gmail_types.MessageId]:
+        def _search(_: Any) -> rx.Observable[gmail_types.MessageId]:
             try:
                 return rx.from_iterable(wrapper.search(query))
             except Exception as e:
@@ -84,7 +83,8 @@ def download_message(
     creds: auth.Credentials | None = None,
     wrapper: gmail_wrapper.GMailWrap | None = None,
 ) -> Callable[
-    [Observable[gmail_types.MessageId | str]], Observable[gmail_types.Message]
+    [rx.Observable[gmail_types.MessageId | str]],
+    rx.Observable[gmail_types.Message],
 ]:
     """Download a GMail message based on the input ID.
 
@@ -104,8 +104,8 @@ def download_message(
             wrapper = environment.shared().gmail_wrapper
 
     def _download_message(
-        source: Observable[gmail_types.MessageId | str],
-    ) -> Observable[gmail_types.Message]:
+        source: rx.Observable[gmail_types.MessageId | str],
+    ) -> rx.Observable[gmail_types.Message]:
         def _process(item: gmail_types.MessageId | str) -> gmail_types.Message:
             if isinstance(item, str):
                 msg_id = item

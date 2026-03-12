@@ -2,13 +2,13 @@
 
 from typing import Any, Protocol, Literal, TypedDict
 
-from rxllmproc.drive.types import File
+from rxllmproc.drive import types as drive_types
 
 
 class FileList(TypedDict, total=False):
     """File List returned by Drive API."""
 
-    files: list[File]
+    files: list[drive_types.File]
     incompleteSearch: bool
     kind: str
     nextPageToken: str
@@ -41,7 +41,7 @@ class FilesInterface(Protocol):
     def create(
         self,
         *,
-        body: File = ...,
+        body: drive_types.File = ...,
         enforceSingleParent: bool = ...,
         ignoreDefaultVisibility: bool = ...,
         includeLabels: str = ...,
@@ -103,7 +103,7 @@ class FilesInterface(Protocol):
         self,
         *,
         fileId: str,
-        body: File = ...,
+        body: drive_types.File = ...,
         addParents: str = ...,
         enforceSingleParent: bool = ...,
         includeLabels: str = ...,

@@ -6,10 +6,10 @@ import json
 import logging
 
 from rxllmproc.cli import cli_base
-from rxllmproc.gmail.types import Message, MessageId
-from rxllmproc.app.mail.index import GmailIndexManager
+from rxllmproc.gmail import types as gmail_types
+from rxllmproc.app.mail import index
 from rxllmproc.text_processing import email_processing
-from rxllmproc.core.auth import CredentialsFactory
+from rxllmproc.core import auth
 from rxllmproc.gmail.api import GMailWrap
 from rxllmproc.core.infra.utilities import asdict
 
@@ -76,7 +76,7 @@ class GmailCli(cli_base.CommonDirOutputCli):
 
     def __init__(
         self,
-        creds: CredentialsFactory | None = None,
+        creds: auth.CredentialsFactory | None = None,
         gmail_wrap: GMailWrap | None = None,
     ) -> None:
         """Construct the instance, allowing for mocks (testing)."""
@@ -90,7 +90,7 @@ class GmailCli(cli_base.CommonDirOutputCli):
         self._wrapper = gmail_wrap
         self.max_results: int = -1
         self.query: str | None = None
-        self.index_manager: GmailIndexManager | None = None
+        self.index_manager: index.GmailIndexManager | None = None
 
     @property
     def wrapper(self) -> GMailWrap:
@@ -99,7 +99,7 @@ class GmailCli(cli_base.CommonDirOutputCli):
             self._wrapper = GMailWrap(self._get_credentials())
         return self._wrapper
 
-    def _process_single_email(self, msg_id: MessageId):
+    def _process_single_email(self, msg_id: gmail_types.MessageId):
         """Process a single email message: download, save, and index it."""
         if self.output_dir is None:
             # This should have been checked before calling.
@@ -134,7 +134,7 @@ class GmailCli(cli_base.CommonDirOutputCli):
             return
 
         try:
-            gmail_msg: Message = self.wrapper.get(msg_id.id)
+            gmail_msg: gmail_types.Message = self.wrapper.get(msg_id.id)
             if self.to_markdown:
                 content = email_processing.get_email_content(
                     gmail_msg.parsed_msg, output="md"
@@ -181,7 +181,7 @@ class GmailCli(cli_base.CommonDirOutputCli):
             raise cli_base.UsageException("Need to pass query")
 
         if self.with_index:
-            self.index_manager = GmailIndexManager(self.output_dir)
+            self.index_manager = index.GmailIndexManager(self.output_dir)
 
         result_count = 0
         for msg_id in self.wrapper.search(self.query):

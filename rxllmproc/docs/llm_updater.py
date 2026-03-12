@@ -7,7 +7,6 @@ from typing import Any, Callable
 
 import reactivex as rx
 from reactivex import operators as ops
-from reactivex import Observable
 
 from rxllmproc.core.infra import utilities
 from rxllmproc.docs import docs_model
@@ -427,17 +426,19 @@ def generate_edits(
     instructions: str,
     llm: llm_commons.LlmBase | str | None = None,
     batch_size: int = 5,
-) -> Callable[[Observable[UpdateItem]], Observable[doc_ops.EditOperation]]:
+) -> Callable[
+    [rx.Observable[UpdateItem]], rx.Observable[doc_ops.EditOperation]
+]:
     """Process UpdateItems in batches as using LLM Rx operator."""
 
     def _operator(
-        source: Observable[UpdateItem],
-    ) -> Observable[doc_ops.EditOperation]:
+        source: rx.Observable[UpdateItem],
+    ) -> rx.Observable[doc_ops.EditOperation]:
         generator = ItemsEditGenerator(document, instructions, llm)
 
         def _process_batch(
             items: list[UpdateItem],
-        ) -> Observable[doc_ops.EditOperation]:
+        ) -> rx.Observable[doc_ops.EditOperation]:
             if not items:
                 return rx.empty()
             try:

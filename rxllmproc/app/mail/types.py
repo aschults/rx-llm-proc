@@ -11,7 +11,7 @@ import sqlalchemy
 import sqlalchemy.orm
 
 from rxllmproc.gmail import types as gmail_types
-from rxllmproc.app.analysis.types import Source
+from rxllmproc.app.analysis import types as analysis_types
 
 
 @dataclasses.dataclass
@@ -148,7 +148,7 @@ class MailMetadata:
 
 
 @dataclasses.dataclass(kw_only=True)
-class MailSource(Source):
+class MailSource(analysis_types.Source):
     """Email source data for analysis."""
 
     mail_metadata: MailMetadata = dataclasses.field(
@@ -175,7 +175,7 @@ class MailSource(Source):
         registry.map_imperatively(
             cls,
             table,
-            inherits=Source,
+            inherits=analysis_types.Source,
             polymorphic_identity="mail_source",
             properties={
                 'mail_metadata': sqlalchemy.orm.relationship(

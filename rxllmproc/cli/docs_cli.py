@@ -4,14 +4,10 @@ import logging
 import sys
 import json
 from rxllmproc.cli import cli_base
-from rxllmproc.core.auth import CredentialsFactory
-from rxllmproc.docs.api import DocsWrapper
-from rxllmproc.docs.docs_model import Document, DocumentContent
-from rxllmproc.docs.types import (
-    DocsRequest,
-    InsertTextRequest,
-    Location,
-)
+from rxllmproc.core import auth
+from rxllmproc.docs import api as docs_api
+from rxllmproc.docs import docs_model
+from rxllmproc.docs import types as docs_types
 from rxllmproc.docs.markdown_to_gdocs import convert_markdown_to_requests
 from rxllmproc.core.infra.utilities import asdict
 from rxllmproc.docs.section import Section
@@ -151,8 +147,8 @@ class DocsCli(cli_base.CommonFileOutputCli):
 
     def __init__(
         self,
-        creds: CredentialsFactory | None = None,
-        docs_wrapper: DocsWrapper | None = None,
+        creds: auth.CredentialsFactory | None = None,
+        docs_wrapper: docs_api.DocsWrapper | None = None,
     ) -> None:
         """Construct the instance, allowing for mocks (testing)."""
         super().__init__(creds)
@@ -176,14 +172,14 @@ class DocsCli(cli_base.CommonFileOutputCli):
         self.define: list[str] | None = None
 
     @property
-    def wrapper(self) -> DocsWrapper:
+    def wrapper(self) -> docs_api.DocsWrapper:
         """Get the Docs wrapper."""
         if self._wrapper is None:
-            self._wrapper = DocsWrapper(self._get_credentials())
+            self._wrapper = docs_api.DocsWrapper(self._get_credentials())
         return self._wrapper
 
     def _determine_insert_index(
-        self, doc: Document, target_section: Section | None
+        self, doc: docs_model.Document, target_section: Section | None
     ) -> int:
         """Determines the insertion index and handles section replacement."""
         if self.section_start:
@@ -234,7 +230,7 @@ class DocsCli(cli_base.CommonFileOutputCli):
         if not self.document_id:
             raise cli_base.UsageException("document_id is required")
 
-        doc = Document(self.wrapper, self.document_id)
+        doc = docs_model.Document(self.wrapper, self.document_id)
 
         content = (
             sys.stdin.read() if self.file is None else open(self.file).read()
@@ -302,9 +298,9 @@ class DocsCli(cli_base.CommonFileOutputCli):
                 requests = convert_markdown_to_requests(content)
             else:
                 requests = [
-                    DocsRequest(
-                        insertText=InsertTextRequest(
-                            text=content, location=Location(index=0)
+                    docs_types.DocsRequest(
+                        insertText=docs_types.InsertTextRequest(
+                            text=content, location=docs_types.Location(index=0)
                         )
                     )
                 ]
@@ -338,7 +334,7 @@ class DocsCli(cli_base.CommonFileOutputCli):
             if not document.body:
                 self.write_output("[]")
                 return
-            content = DocumentContent(document.body)
+            content = docs_model.DocumentContent(document.body)
             self.write_output(
                 json.dumps([s.as_dict() for s in content.sections], indent=2)
             )

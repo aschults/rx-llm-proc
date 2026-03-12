@@ -4,7 +4,6 @@ from typing import Callable
 import dataclasses
 import reactivex as rx
 from reactivex import operators as ops
-from reactivex import Observable
 from rxllmproc.docs import docs_model
 
 
@@ -59,6 +58,7 @@ class BatchEditor:
 
         def sort_key(op: EditOperation):
             """Sort operations descending by index to avoid shifting issues.
+
             Priority: Delete (1) > Insert (0) at same index.
             """
             if isinstance(op, InsertOperation):
@@ -83,11 +83,11 @@ class BatchEditor:
 
 def apply_batch_edits(
     doc: docs_model.Document,
-) -> Callable[[Observable[EditOperation]], Observable[str]]:
+) -> Callable[[rx.Observable[EditOperation]], rx.Observable[str]]:
     """Collects all edits and applies them in reverse order of doc offset."""
 
-    def _apply(source: Observable[EditOperation]) -> Observable[str]:
-        def _execute(ops_list: list[EditOperation]) -> Observable[str]:
+    def _apply(source: rx.Observable[EditOperation]) -> rx.Observable[str]:
+        def _execute(ops_list: list[EditOperation]) -> rx.Observable[str]:
             editor = BatchEditor(doc)
             for op in ops_list:
                 editor.add(op)
@@ -105,7 +105,7 @@ def insert_markdown(
     doc: docs_model.Document,
     index: int,
     insert_forward: bool = False,
-) -> Callable[[Observable[str]], Observable[int]]:
+) -> Callable[[rx.Observable[str]], rx.Observable[int]]:
     """Insert markdown content into a Google Doc.
 
     NOTE: The insertion in on_next is always done at the initial index, so
@@ -125,7 +125,7 @@ def insert_markdown(
     """
     index_ = index
 
-    def _do_insert(content: str) -> Observable[int]:
+    def _do_insert(content: str) -> rx.Observable[int]:
         try:
             nonlocal index_
             index_ = doc.insert_markdown_at(
@@ -135,7 +135,7 @@ def insert_markdown(
         except Exception as e:
             return rx.throw(e)
 
-    def _insert_markdown(source: Observable[str]) -> Observable[int]:
+    def _insert_markdown(source: rx.Observable[str]) -> rx.Observable[int]:
         return source.pipe(
             ops.flat_map(_do_insert),
         )

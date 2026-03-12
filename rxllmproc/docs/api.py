@@ -8,7 +8,7 @@ import dacite
 import dacite.exceptions
 from googleapiclient.discovery import build  # type: ignore
 
-from rxllmproc.docs.types import DocsRequests, Document
+from rxllmproc.docs import types as docs_types
 from rxllmproc.core import auth, api_base
 from . import _interface
 
@@ -43,7 +43,7 @@ class DocsWrapper(api_base.ApiBase):
             requestBuilder=self.build_request,
         )
 
-    def batch_update(self, document_id: str, requests: DocsRequests):
+    def batch_update(self, document_id: str, requests: docs_types.DocsRequests):
         """Applies a series of updates to a document.
 
         Args:
@@ -67,7 +67,7 @@ class DocsWrapper(api_base.ApiBase):
             body=body,
         ).execute()
 
-    def get(self, document_id: str) -> Document:
+    def get(self, document_id: str) -> docs_types.Document:
         """Retrieves a document.
 
         Args:
@@ -80,7 +80,9 @@ class DocsWrapper(api_base.ApiBase):
         request = self._service.documents().get(documentId=document_id)
         doc_dict = request.execute()
         try:
-            return dacite.from_dict(data_class=Document, data=doc_dict)
+            return dacite.from_dict(
+                data_class=docs_types.Document, data=doc_dict
+            )
         except dacite.exceptions.DaciteError:
             logging.error("failed to deserialize", exc_info=True)
             logging.error("doc: %s", doc_dict)

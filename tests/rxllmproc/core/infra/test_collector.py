@@ -3,7 +3,7 @@
 import unittest
 from typing import Any
 
-from reactivex import from_list
+import reactivex as rx
 
 from rxllmproc.core.infra import collector
 
@@ -61,13 +61,13 @@ class TestCollectingObserver(unittest.TestCase):
     def test_counter(self):
         """Test that each passed item is counted."""
         coll = collector.MemoryCollector()
-        from_list([1, 2]).subscribe(collector.CollectingObserver('x', coll))
+        rx.from_list([1, 2]).subscribe(collector.CollectingObserver('x', coll))
         self.assertEqual({'x': 2}, coll.data)
 
     def test_counter_name_function(self):
         """Test that a function can be passed as key."""
         coll = collector.MemoryCollector()
-        from_list([1, 2]).subscribe(
+        rx.from_list([1, 2]).subscribe(
             collector.CollectingObserver(lambda: 'yyy', coll)
         )
         self.assertEqual({'yyy': 2}, coll.data)
@@ -78,7 +78,7 @@ class TestCollectingObserver(unittest.TestCase):
         recorder = RecordingObserver[Any]()
         coll.sample_observable.subscribe(recorder)
 
-        from_list([5, 6, 7, 8]).subscribe(
+        rx.from_list([5, 6, 7, 8]).subscribe(
             collector.CollectingObserver('x', coll, 2)
         )
 

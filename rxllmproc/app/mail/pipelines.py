@@ -4,7 +4,6 @@ import logging
 from typing import Any, Callable
 
 import reactivex as rx
-from reactivex import Observable
 from reactivex import operators as ops
 from reactivex.abc import scheduler as rx_abc_scheduler
 from reactivex import scheduler as rx_scheduler
@@ -82,7 +81,9 @@ class MailPipeline:
             'email_metadata': "\n".join(headers),
         }
 
-    def _catch_error(self, e: Exception, _: Observable[Any]) -> Observable[Any]:
+    def _catch_error(
+        self, e: Exception, _: rx.Observable[Any]
+    ) -> rx.Observable[Any]:
         logging.error("Error in processing pipeline", exc_info=e)
         self.env.error_handler(e)
         return rx.empty()
@@ -96,16 +97,16 @@ class MailPipeline:
     def analyze_email(
         self,
     ) -> Callable[
-        [Observable[gmail_types.Message]], Observable[types.MailSource]
+        [rx.Observable[gmail_types.Message]], rx.Observable[types.MailSource]
     ]:
         """Analyze an email message to extract structured data."""
 
         def _analyze_email(
-            source: Observable[gmail_types.Message],
-        ) -> Observable[types.MailSource]:
+            source: rx.Observable[gmail_types.Message],
+        ) -> rx.Observable[types.MailSource]:
             def _process(
                 msg: gmail_types.Message,
-            ) -> Observable[types.MailSource]:
+            ) -> rx.Observable[types.MailSource]:
                 mail_metadata = types.MailMetadata.from_msg(msg)
 
                 obs = rx.of(msg)
@@ -144,7 +145,7 @@ class MailPipeline:
     def load_new_messages(
         self,
         limit: int = 30,
-    ) -> Callable[[Observable[str]], Observable[gmail_types.Message]]:
+    ) -> Callable[[rx.Observable[str]], rx.Observable[gmail_types.Message]]:
         """Load new messages that are not yet in the database."""
         processed_ids: set[str] = set()
 
@@ -156,8 +157,8 @@ class MailPipeline:
                 processed_ids = self.get_gmail_ids()
 
         def _load(
-            trigger: Observable[str],
-        ) -> Observable[gmail_types.Message]:
+            trigger: rx.Observable[str],
+        ) -> rx.Observable[gmail_types.Message]:
             query = self.config.gmail_query
             if query is None:
                 raise ValueError("Query must be provided in the configuration.")
