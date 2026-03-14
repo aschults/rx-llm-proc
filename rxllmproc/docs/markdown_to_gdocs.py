@@ -2,10 +2,10 @@
 
 from typing import Dict, List, cast
 
-from markdown_it import MarkdownIt
-from markdown_it.token import Token  # pyright: ignore[reportMissingTypeStubs]
+import markdown_it
+from markdown_it import token  # pyright: ignore[reportMissingTypeStubs]
 
-from .markdownit_indent import indented_paragraph_plugin
+from rxllmproc.docs import markdownit_indent
 from rxllmproc.docs import types as docs_types
 
 # The amount of indentation to apply for each level of a nested list.
@@ -48,12 +48,14 @@ def convert_markdown_to_requests(markdown_text: str) -> docs_types.DocsRequests:
         A list of request objects for the Google Docs batchUpdate method.
         Indices are set to start at 0, need to be updated when executing
     """
-    md = MarkdownIt("gfm-like").use(indented_paragraph_plugin)
+    md = markdown_it.MarkdownIt("gfm-like").use(
+        markdownit_indent.indented_paragraph_plugin
+    )
     tokens = md.parse(markdown_text)
 
     # We build requests in order, then reverse them at the end for insertion.
     block_requests: List[docs_types.DocsRequests] = []
-    list_token_stack: List[Token] = []
+    list_token_stack: List[token.Token] = []
 
     i = 0
     while i < len(tokens):
@@ -138,7 +140,7 @@ def convert_markdown_to_requests(markdown_text: str) -> docs_types.DocsRequests:
 
 
 def _create_styled_paragraph_requests(
-    inline_token: Token, paragraph_style: docs_types.ParagraphStyle
+    inline_token: token.Token, paragraph_style: docs_types.ParagraphStyle
 ) -> docs_types.DocsRequests:
     """Creates the API requests for a paragraph with a specific style.
 
@@ -213,7 +215,9 @@ def _create_styled_paragraph_requests(
 
 
 def _create_list_item_requests(
-    inline_token: Token, paragraph_open_token: Token, list_open_token: Token
+    inline_token: token.Token,
+    paragraph_open_token: token.Token,
+    list_open_token: token.Token,
 ) -> docs_types.DocsRequests:
     """Creates the API requests for a bulleted or numbered list item.
 
@@ -303,7 +307,7 @@ def _create_list_item_requests(
 
 
 def _process_child_token(
-    child: Token,
+    child: token.Token,
     content: str,
     all_requests: docs_types.DocsRequests,
     request_stack: docs_types.DocsRequests,
@@ -360,7 +364,7 @@ def _process_child_token(
 
 
 def _process_inline_token(
-    inline_token: Token,
+    inline_token: token.Token,
 ) -> tuple[docs_types.DocsRequests, docs_types.DocsRequests]:
     """Processes an 'inline' token to extract text and generate styling requests.
 

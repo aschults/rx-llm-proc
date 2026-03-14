@@ -5,11 +5,13 @@ import logging
 import threading
 from typing import Any
 
-from googleapiclient.discovery import build  # type: ignore
+from googleapiclient import discovery
 import dacite
 
-from . import types, _interface
-from rxllmproc.core import auth, api_base
+from rxllmproc.calendar import types
+from rxllmproc.calendar import _interface
+from rxllmproc.core import auth
+from rxllmproc.core import api_base
 
 
 class CalendarWrap(api_base.ApiBase):
@@ -36,7 +38,7 @@ class CalendarWrap(api_base.ApiBase):
         if self._service_arg:
             return self._service_arg
         if not hasattr(self._local, "service"):
-            self._local.service = build(
+            self._local.service = discovery.build(
                 "calendar",
                 "v3",
                 credentials=self._creds,

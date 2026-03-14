@@ -6,12 +6,12 @@ from typing import Any, Generator
 import base64
 
 from email import message
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
+from googleapiclient import discovery, errors
 import dacite
 
 from rxllmproc.gmail import types as gmail_types
-from rxllmproc.core import auth, api_base
+from rxllmproc.core import auth
+from rxllmproc.core import api_base
 from rxllmproc.gmail import _interface
 
 
@@ -86,7 +86,7 @@ class GMailWrap(api_base.ApiBase):
                 if not page_token:
                     break
 
-        except HttpError:
+        except errors.HttpError:
             logging.exception('failed to query mail %s', q)
             raise
 
@@ -110,7 +110,7 @@ class GMailWrap(api_base.ApiBase):
             )
             return list_result.messages
 
-        except HttpError:
+        except errors.HttpError:
             logging.exception('failed to query mail %s', q)
             raise
 
@@ -142,7 +142,7 @@ class GMailWrap(api_base.ApiBase):
         if self._service_arg:
             return self._service_arg
         if not hasattr(self._local, 'service'):
-            self._local.service = build(
+            self._local.service = discovery.build(
                 "gmail",
                 "v1",
                 credentials=self._creds,

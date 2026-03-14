@@ -12,9 +12,12 @@ from google_auth_oauthlib import flow
 from google.oauth2 import credentials
 from google.oauth2 import service_account
 from google.auth.transport import requests as goog_requests
-from google.auth.exceptions import RefreshError
+from google.auth import exceptions
 
-from google.auth.credentials import Credentials
+from google.auth import credentials as goog_credentials
+
+Credentials = goog_credentials.Credentials
+
 
 # Default scopes to use for OAuth.
 DEFAULT_SCOPES: Sequence[str] = [
@@ -26,7 +29,7 @@ DEFAULT_SCOPES: Sequence[str] = [
     'https://www.googleapis.com/auth/calendar',
 ]
 
-SingleCredentialFactory = Callable[[str], Credentials | None]
+SingleCredentialFactory = Callable[[str], goog_credentials.Credentials | None]
 
 
 class CredentialsFactory:
@@ -54,7 +57,7 @@ class CredentialsFactory:
     def __init__(self) -> None:
         """Construct an instance."""
         # Keep created credentials cached so we don't repeat e.g. OAuth flows.
-        self._cached: Dict[str, Credentials] | None = dict()
+        self._cached: Dict[str, goog_credentials.Credentials] | None = dict()
 
         # List of Credential factories, executed in order of the list.
         # First one to return credentials succeeds.
@@ -66,7 +69,7 @@ class CredentialsFactory:
     def for_label(
         self,
         label: Optional[str] = None,
-    ) -> Credentials:
+    ) -> goog_credentials.Credentials:
         """Fetch credentials by username."""
         if label is None:
             label = self.default_label
@@ -82,11 +85,11 @@ class CredentialsFactory:
                 return creds
         raise Exception('could not create credentials')
 
-    def get_default(self) -> Credentials:
+    def get_default(self) -> goog_credentials.Credentials:
         """Get the default creds."""
         return self.for_label()
 
-    def _adc_factory(self, label: str) -> Credentials | None:
+    def _adc_factory(self, label: str) -> goog_credentials.Credentials | None:
         """Obtain Application Default Credentials (ADC).
 
         Args:
@@ -105,7 +108,9 @@ class CredentialsFactory:
 
         return None
 
-    def _default_oauth_factory(self, label: str) -> Credentials | None:
+    def _default_oauth_factory(
+        self, label: str
+    ) -> goog_credentials.Credentials | None:
         """Obtain the default OAuth credentials from client secrets.
 
         Args:
@@ -137,7 +142,7 @@ class CredentialsFactory:
     def _service_account_factory(
         self,
         label: str,
-    ) -> Credentials | None:
+    ) -> goog_credentials.Credentials | None:
         """Obtain credentials from a service account file.
 
         Args:
@@ -179,7 +184,7 @@ def get_credentials_from_webserver_auth(
     client_secret_file: str,
     credentials_file: str,
     scopes: Optional[Sequence[str]] = None,
-) -> Credentials:
+) -> goog_credentials.Credentials:
     """Return Google OAuth credentials.
 
     Args:
@@ -202,7 +207,7 @@ def get_credentials_from_webserver_auth(
             return creds
         try:
             creds.refresh(goog_requests.Request())
-        except RefreshError as exception:
+        except exceptions.RefreshError as exception:
             logging.info('could not refresh token: %s', exception)
 
     if creds is None or not creds.valid:

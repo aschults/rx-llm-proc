@@ -12,11 +12,8 @@ from rxllmproc.gmail import api as gmail_api
 from rxllmproc.calendar import api as calendar_api
 from rxllmproc.llm import commons as llm_commons
 from rxllmproc.tasks import api as tasks_wrapper
-from rxllmproc.tasks.api import ManagedTasks
-from rxllmproc.docs import (
-    docs_model,
-    api as docs_wrapper,
-)
+from rxllmproc.docs import docs_model
+from rxllmproc.docs import api as docs_wrapper
 from rxllmproc.core.infra import cache, collector
 
 _T = TypeVar("_T")
@@ -81,7 +78,7 @@ class Environment:
         self._gmail_wrapper: Optional[gmail_api.GMailWrap] = None
         self._calendar_wrapper: Optional[calendar_api.CalendarWrap] = None
         self._tasks_wrapper: Optional[tasks_wrapper.TasksWrap] = None
-        self._managed_tasks: Optional[ManagedTasks] = None
+        self._managed_tasks: Optional[tasks_wrapper.ManagedTasks] = None
         self._docs_wrapper: Optional[docs_wrapper.DocsWrapper] = None
 
         # First, set hard coded defaults or shared factories.
@@ -249,7 +246,7 @@ class Environment:
         return self._docs_wrapper
 
     @property
-    def managed_tasks(self) -> ManagedTasks:
+    def managed_tasks(self) -> tasks_wrapper.ManagedTasks:
         """Get or create the ManagedTasks wrapper."""
         if self._managed_tasks is None:
             self._managed_tasks = tasks_wrapper.ManagedTasks(self.tasks_wrapper)

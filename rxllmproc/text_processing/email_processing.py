@@ -4,9 +4,12 @@ from typing import cast, Literal, Any
 import logging
 from email import message
 
-from . import ProcessingException, html_processing
-
 import markdownify  # type: ignore
+
+from rxllmproc import text_processing
+from rxllmproc.text_processing import html_processing
+
+ProcessingException = text_processing.ProcessingException
 
 
 def _get_raw_email_content(msg: message.EmailMessage | None) -> str:

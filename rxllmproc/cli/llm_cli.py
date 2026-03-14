@@ -14,12 +14,7 @@ import re
 from rxllmproc.cli import cli_base
 from rxllmproc.core import auth
 
-from rxllmproc.llm.commons import (
-    BasicLlmFunction,
-    LlmBase,
-    LlmFunction,
-    GeneratorError,
-)
+from rxllmproc.llm import commons
 from rxllmproc.text_processing import jinja_processing
 from rxllmproc.core.infra import containers
 
@@ -222,11 +217,11 @@ class LlmCli(cli_base.CommonFileOutputCli):
         self.upload: List[str] | None = None
         self.define: List[str] | None = None
 
-        current_time = BasicLlmFunction(
+        current_time = commons.BasicLlmFunction(
             'get_current_time', 'Gets the current local time.', self.get_time
         )
 
-        self.functions: List[LlmFunction] = [current_time]
+        self.functions: List[commons.LlmFunction] = [current_time]
 
     def _include_file(self, filename: str) -> str:
         """Jinja function to include a file's content."""
@@ -234,7 +229,7 @@ class LlmCli(cli_base.CommonFileOutputCli):
 
     def _add_functions(self):
         """Add functions based on set options."""
-        file_func = BasicLlmFunction(
+        file_func = commons.BasicLlmFunction(
             'read_file',
             ('Read the full content of the speficied file.'),
             self.retreive_file,
@@ -243,7 +238,7 @@ class LlmCli(cli_base.CommonFileOutputCli):
                 'description': ('The filename of the file to read.'),
             },
         )
-        file_write_func = BasicLlmFunction(
+        file_write_func = commons.BasicLlmFunction(
             'write_file',
             ('Write the content of the speficied file.'),
             self.write_file,
@@ -256,7 +251,7 @@ class LlmCli(cli_base.CommonFileOutputCli):
                 'description': 'The content of the file to be written.',
             },
         )
-        list_func = BasicLlmFunction(
+        list_func = commons.BasicLlmFunction(
             'list_files',
             'List files by glob/unix style pattern.',
             self.list_files,
@@ -265,7 +260,7 @@ class LlmCli(cli_base.CommonFileOutputCli):
                 'description': 'glob-style pattern to match files.',
             },
         )
-        get_url_func = BasicLlmFunction(
+        get_url_func = commons.BasicLlmFunction(
             'get_url',
             'Gets the content of an external website or URL.',
             self.retreive_url,
@@ -288,7 +283,7 @@ class LlmCli(cli_base.CommonFileOutputCli):
         """
         return []
 
-    def _build_model(self) -> LlmBase:
+    def _build_model(self) -> commons.LlmBase:
         logging.info(
             'Creating LLM of type %s, functions: %s',
             self.model,
@@ -303,7 +298,7 @@ class LlmCli(cli_base.CommonFileOutputCli):
 
     def _exception_to_status(self, e: Exception) -> Tuple[int, str] | None:
         """Map Generator Errors to 30 exit value."""
-        if isinstance(e, GeneratorError):
+        if isinstance(e, commons.GeneratorError):
             return 30, f'Could not generate result: {e}'
         return super()._exception_to_status(e)
 

@@ -1,8 +1,10 @@
-from rxllmproc.docs.markdown_to_gdocs import (
-    convert_markdown_to_requests,
-)
+from rxllmproc.docs import markdown_to_gdocs
 
-from test_support import fail_none  # noqa: E402
+convert_markdown_to_requests = markdown_to_gdocs.convert_markdown_to_requests
+
+import test_support  # noqa: E402
+
+fail_none = test_support.fail_none
 
 
 def test_italic_text():

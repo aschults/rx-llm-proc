@@ -32,6 +32,7 @@ flake8 rxllmproc tests \
   --max-complexity=10 \
   --max-line-length=80 || true
 pydocstyle rxllmproc tests --convention=google || true
+python3 import_checker.py rxllmproc
 # pytype rxllmproc tests -P .:tests -j 4 --strict-primitive-comparisons --strict-import --precise-return --strict-parameter-checks
 PYTHONPATH=.:tests pyright --dependencies #--stats
 pytest --cov=rxllmproc/ --cov-report=term --cov-report=lcov

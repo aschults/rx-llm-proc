@@ -9,6 +9,11 @@ To get documentation up to standard check
 
 For type checking use `.venv/bin/pyright --dependencies`
 
+For import namespace checking:
+```
+python3 import_checker.py rxllmproc
+```
+
 Flake test1:
 ```
 .venv/bin/flake8 rxllmproc tests \

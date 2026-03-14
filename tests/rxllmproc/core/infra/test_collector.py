@@ -7,7 +7,9 @@ import reactivex as rx
 
 from rxllmproc.core.infra import collector
 
-from test_support import RecordingObserver
+import test_support
+
+RecordingObserver = test_support.RecordingObserver
 
 
 class TestMemoryCollector(unittest.TestCase):

@@ -10,6 +10,7 @@ from reactivex import operators as ops
 
 from rxllmproc.core.infra import utilities
 from rxllmproc.docs import docs_model
+from rxllmproc.docs import section
 from rxllmproc.docs import operators as doc_ops
 from rxllmproc.llm import commons as llm_commons
 from rxllmproc.text_processing import jinja_processing
@@ -158,28 +159,28 @@ default: True
 
 
 def _section2dict(
-    section: docs_model.Section, with_texts: bool = True
+    section_: section.Section, with_texts: bool = True
 ) -> dict[str, Any]:
     subsections = [
         _section2dict(sub, with_texts)
-        for sub in section.subsections
+        for sub in section_.subsections
         if with_texts or sub.level != "text"
     ]
-    if section.level == "text":
+    if section_.level == "text":
         result = {
-            "text_start": section.start,
-            "text_end": section.end,
-            "text": section.text,
+            "text_start": section_.start,
+            "text_end": section_.end,
+            "text": section_.text,
         }
     else:
         result = {
-            "level": section.level,
-            "title": section.text,
-            "title_start": section.start,
-            "title_end": section.end,
-            "content_start": section.subsections_start,
-            "content_end": section.subsections_end,
-            "heading_id": section.heading_id,
+            "level": section_.level,
+            "title": section_.text,
+            "title_start": section_.start,
+            "title_end": section_.end,
+            "content_start": section_.subsections_start,
+            "content_end": section_.subsections_end,
+            "heading_id": section_.heading_id,
             "subsections": subsections,
         }
     return result

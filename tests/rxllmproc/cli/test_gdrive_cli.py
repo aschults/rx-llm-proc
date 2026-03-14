@@ -7,7 +7,7 @@ import io
 from unittest import mock
 from pyfakefs import fake_filesystem_unittest
 
-from googleapiclient.errors import HttpError
+from googleapiclient import errors
 from rxllmproc.drive import types
 from rxllmproc.drive import api
 from rxllmproc.cli import gdrive_cli
@@ -64,10 +64,10 @@ class TestDriveCli(fake_filesystem_unittest.TestCase):
     @mock.patch('rxllmproc.cli.cli_base.sys.exit')
     def test_get_no_drive_file(self, exit_mock: mock.Mock):
         """Test with missing doc on Drive."""
-        exception = mock.Mock(HttpError)
+        exception = mock.Mock(errors.HttpError)
         exception.reason = 'some reason'
         exception.status = 404
-        self.wrap.get_doc.side_effect = HttpError(exception, b'{}')
+        self.wrap.get_doc.side_effect = errors.HttpError(exception, b'{}')
         stderr_capture = io.StringIO()
 
         with contextlib.redirect_stderr(stderr_capture):
@@ -117,10 +117,10 @@ class TestDriveCli(fake_filesystem_unittest.TestCase):
     @mock.patch('rxllmproc.cli.cli_base.sys.exit')
     def test_list_stdout_bad_api(self, exit_mock: mock.Mock):
         """Test listing to stdout when API fails."""
-        exception = mock.Mock(HttpError)
+        exception = mock.Mock(errors.HttpError)
         exception.reason = 'some reason'
         exception.status = 404
-        self.wrap.list.side_effect = HttpError(exception, b'{}')
+        self.wrap.list.side_effect = errors.HttpError(exception, b'{}')
 
         self.instance.main(['list', 'the_query'])
 
@@ -292,10 +292,10 @@ class TestDriveCli(fake_filesystem_unittest.TestCase):
         """Test updating with API failure."""
         self.fs.create_file('in.txt', contents='the_content')
 
-        exception = mock.Mock(HttpError)
+        exception = mock.Mock(errors.HttpError)
         exception.reason = 'some reason'
         exception.status = 404
-        self.wrap.get_file.side_effect = HttpError(exception, b'{}')
+        self.wrap.get_file.side_effect = errors.HttpError(exception, b'{}')
 
         self.instance.main(['put', '--update_id=12345', 'in.txt'])
 

@@ -6,7 +6,7 @@ import dataclasses
 from os import path
 from typing import Any
 
-from rxllmproc.gmail.types import Message
+from rxllmproc.gmail import types as gmail_types
 from rxllmproc.core.infra import utilities
 from rxllmproc.app.mail import types
 
@@ -80,7 +80,7 @@ class GmailIndexManager:
             logging.exception("Failed to save index file: %s", self.index_file)
             raise
 
-    def add(self, gmail_msg: Message, path: str | None = None):
+    def add(self, gmail_msg: gmail_types.Message, path: str | None = None):
         """Creates and adds a dictionary entry for the email index."""
         if not gmail_msg.id:
             raise ValueError("Message has no ID, cannot add to index.")

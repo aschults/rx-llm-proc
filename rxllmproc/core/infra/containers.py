@@ -5,7 +5,7 @@ import os.path
 import os
 import mimetypes
 
-from rxllmproc.drive.api import DriveWrap
+from rxllmproc.drive import api as drive_api
 
 import dateutil.parser
 
@@ -40,7 +40,7 @@ class DriveFileContainer(Container):
 
     def __init__(
         self,
-        service: DriveWrap,
+        service: drive_api.DriveWrap,
         mime_type: str,
         filename: str | None = None,
         file_id: str | None = None,

@@ -50,7 +50,7 @@ class TestDocsProcessing(unittest.TestCase):
     def test_execute_pipeline(self):
         """Test that the pipeline is built and executed."""
         with mock.patch(
-            "rxllmproc.app.docs.processing.MarkdownIndexInserter"
+            "rxllmproc.app.docs.processing.docs_pipelines.MarkdownIndexInserter"
         ) as mock_inserter_cls, mock.patch(
             "rxllmproc.app.docs.processing.sqlalchemy"
         ) as mock_sqlalchemy:

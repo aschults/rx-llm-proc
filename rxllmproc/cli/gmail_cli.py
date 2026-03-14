@@ -10,8 +10,8 @@ from rxllmproc.gmail import types as gmail_types
 from rxllmproc.app.mail import index
 from rxllmproc.text_processing import email_processing
 from rxllmproc.core import auth
-from rxllmproc.gmail.api import GMailWrap
-from rxllmproc.core.infra.utilities import asdict
+from rxllmproc.gmail import api as gmail_api
+from rxllmproc.core.infra import utilities
 
 
 class GmailCli(cli_base.CommonDirOutputCli):
@@ -77,7 +77,7 @@ class GmailCli(cli_base.CommonDirOutputCli):
     def __init__(
         self,
         creds: auth.CredentialsFactory | None = None,
-        gmail_wrap: GMailWrap | None = None,
+        gmail_wrap: gmail_api.GMailWrap | None = None,
     ) -> None:
         """Construct the instance, allowing for mocks (testing)."""
         super().__init__(creds)
@@ -93,10 +93,10 @@ class GmailCli(cli_base.CommonDirOutputCli):
         self.index_manager: index.GmailIndexManager | None = None
 
     @property
-    def wrapper(self) -> GMailWrap:
+    def wrapper(self) -> gmail_api.GMailWrap:
         """Get the Drive wrapper."""
         if self._wrapper is None:
-            self._wrapper = GMailWrap(self._get_credentials())
+            self._wrapper = gmail_api.GMailWrap(self._get_credentials())
         return self._wrapper
 
     def _process_single_email(self, msg_id: gmail_types.MessageId):
@@ -148,7 +148,7 @@ class GmailCli(cli_base.CommonDirOutputCli):
 
             meta_file_path = path.join(output_dir, f"{msg_id.id}.meta.json")
             logging.info("Saving metadata to %s", meta_file_path)
-            msg_dict = asdict(gmail_msg)
+            msg_dict = utilities.asdict(gmail_msg)
             msg_dict.pop("parsed_msg", None)
             msg_dict.pop("raw", None)
             with open(meta_file_path, "w", encoding="utf-8") as f:

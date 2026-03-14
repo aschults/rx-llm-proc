@@ -3,8 +3,8 @@
 import dataclasses
 import datetime
 import logging
-from email.header import decode_header
-from email.utils import parsedate_to_datetime
+from email import header
+from email import utils
 from typing import Any
 
 import sqlalchemy
@@ -56,12 +56,12 @@ class MailMetadata:
     )
 
     @staticmethod
-    def _decode_email_header(header: str) -> str | None:
+    def _decode_email_header(header_str: str) -> str | None:
         """Decodes email headers to a readable string."""
-        if not header:
+        if not header_str:
             return None
         decoded_parts: list[str] = []
-        for part, charset in decode_header(header):
+        for part, charset in header.decode_header(header_str):
             if isinstance(part, bytes):
                 decoded_parts.append(part.decode(charset or "utf-8", "ignore"))
             else:
@@ -85,7 +85,7 @@ class MailMetadata:
         date_str = cls._decode_email_header(msg.get("Date", ""))
         iso_date = date_str
         try:
-            dt = parsedate_to_datetime(date_str)
+            dt = utils.parsedate_to_datetime(date_str)
             if dt:
                 if dt.tzinfo:
                     dt = dt.astimezone(datetime.timezone.utc)

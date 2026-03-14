@@ -47,6 +47,7 @@ mail_categorizer_cli = "rxllmproc.cli.mail_categorizer_cli:main"
 sheets_cli = "rxllmproc.cli.sheets_cli:main"
 tasks_cli = "rxllmproc.cli.tasks_cli:main"
 template_cli = "rxllmproc.cli.template_cli:main"
+collaboration_mcp = "rxllmproc.cli.collaboration_mcp:main"
 
 
 
@@ -65,10 +66,12 @@ testing = [
     "google-auth-stubs",
     "types-beautifulsoup4",
     "flake8",
+    "pytest-asyncio",
 ]
 
 [tool.pytest.ini_options]
 pythonpath=[".","tests"]
+asyncio_mode = "auto"
 
 minversion = "6.0"
 addopts = "-ra -q"

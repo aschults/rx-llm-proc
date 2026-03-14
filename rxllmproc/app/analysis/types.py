@@ -5,7 +5,7 @@ import datetime
 
 import sqlalchemy
 import sqlalchemy.orm
-from sqlalchemy.ext.orderinglist import ordering_list
+from sqlalchemy.ext import orderinglist
 
 from rxllmproc.database import api as database
 
@@ -230,7 +230,9 @@ class Analysis:
                     "ActionItem",
                     backref='analysis',
                     lazy="selectin",
-                    collection_class=ordering_list("action_number"),
+                    collection_class=orderinglist.ordering_list(
+                        "action_number"
+                    ),
                     primaryjoin="foreign(ActionItem.analysis_id) == Analysis.id",
                 ),
             },

@@ -5,8 +5,8 @@ from typing import Any, Callable, Optional, TypeVar
 import reactivex as rx
 from reactivex import operators as ops
 
-from . import api as calendar_wrapper
-from . import types as calendar_types
+from rxllmproc.calendar import api as calendar_wrapper
+from rxllmproc.calendar import types as calendar_types
 from rxllmproc.core import auth, environment
 
 _T = TypeVar("_T")

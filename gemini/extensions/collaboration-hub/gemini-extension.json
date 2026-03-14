@@ -1,0 +1,11 @@
+{
+  "name": "collaboration-hub",
+  "version": "0.1.0",
+  "description": "MCP server for inter-agent communication, enabling swarm behavior between independent Gemini CLI instances.",
+  "contextFileName": "GEMINI.md",
+  "mcpServers": {
+    "collaboration": {
+      "url": "http://localhost:8000/sse"
+    }
+  }
+}

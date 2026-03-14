@@ -3,7 +3,7 @@
 from typing import Any, Protocol, Literal
 import dataclasses
 
-from rxllmproc.gmail.types import MessageId
+from rxllmproc.gmail import types
 
 
 class GmailHttpRequestInterface(Protocol):
@@ -75,7 +75,9 @@ class GmailInterface(Protocol):
 class ListMessageResponse:
     """Response for messages().list()."""
 
-    messages: list[MessageId] = dataclasses.field(default_factory=lambda: [])
+    messages: list[types.MessageId] = dataclasses.field(
+        default_factory=lambda: []
+    )
     nextPageToken: str = ''
 
 

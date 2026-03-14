@@ -5,10 +5,10 @@ from typing import (
 )
 import httplib2
 
-from googleapiclient.http import HttpRequest
+from googleapiclient import http
 import google_auth_httplib2  # type: ignore
 
-from . import auth
+from rxllmproc.core import auth
 
 
 class ApiBase:
@@ -26,7 +26,7 @@ class ApiBase:
 
     def build_request(
         self, http: Any, *args: Any, **kwargs: Any
-    ) -> HttpRequest:
+    ) -> http.HttpRequest:
         """Build HTTP requests for the Google API client.
 
         See Also:
@@ -35,4 +35,4 @@ class ApiBase:
         new_http: Any = google_auth_httplib2.AuthorizedHttp(
             self._creds, http=httplib2.Http()
         )
-        return HttpRequest(new_http, *args, **kwargs)
+        return http.HttpRequest(new_http, *args, **kwargs)

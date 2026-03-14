@@ -6,11 +6,11 @@ from typing import Any
 
 import dacite
 import dacite.exceptions
-from googleapiclient.discovery import build  # type: ignore
+from googleapiclient import discovery
 
 from rxllmproc.docs import types as docs_types
 from rxllmproc.core import auth, api_base
-from . import _interface
+from rxllmproc.docs import _interface
 
 
 def _as_dict_factory(args: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -36,7 +36,7 @@ class DocsWrapper(api_base.ApiBase):
                 is not thread-safe.
         """
         super().__init__(creds)
-        self._service: _interface.DocsInterface = service or build(
+        self._service: _interface.DocsInterface = service or discovery.build(
             "docs",
             "v1",
             credentials=self._creds,

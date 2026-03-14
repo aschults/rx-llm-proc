@@ -10,10 +10,7 @@ import sqlalchemy
 
 from rxllmproc.app import environment as app_environment
 from rxllmproc.app.docs import types as docs_types
-from rxllmproc.app.docs.pipelines import (
-    MarkdownIndexInserter,
-    MarkdownLlmInserter,
-)
+from rxllmproc.app.docs import pipelines as docs_pipelines
 from rxllmproc.app.analysis import types as analysis_types
 
 
@@ -37,7 +34,7 @@ class DocsProcessing:
 
             if config.insertion_instructions:
                 logging.info('Using LLM inserter for docs.')
-                self.inserter = MarkdownLlmInserter(
+                self.inserter = docs_pipelines.MarkdownLlmInserter(
                     document=self.doc_model,
                     config=self.config,
                 )
@@ -46,7 +43,7 @@ class DocsProcessing:
                     'Using index inserter for docs. (No instructions provided)'
                 )
                 # If we don't provide instructions, just add at the end.
-                self.inserter = MarkdownIndexInserter(
+                self.inserter = docs_pipelines.MarkdownIndexInserter(
                     self.doc_model,
                     self.config,
                     self.doc_model.get_end(),

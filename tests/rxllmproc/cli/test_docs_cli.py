@@ -5,7 +5,6 @@ import json
 import unittest
 from unittest import mock
 
-from unittest.mock import MagicMock, patch
 from rxllmproc.cli import docs_cli
 
 
@@ -13,10 +12,10 @@ class TestDocsCli(unittest.TestCase):
     """Test cases for Docs CLI."""
 
     def setUp(self):
-        self.mock_wrapper = MagicMock()
+        self.mock_wrapper = mock.MagicMock()
         self.cli = docs_cli.DocsCli(docs_wrapper=self.mock_wrapper)
         self.cli.document_id = "test_doc"
-        self.document_patcher = patch("rxllmproc.docs.docs_model.Document")
+        self.document_patcher = mock.patch("rxllmproc.docs.docs_model.Document")
         self.mock_document_cls = self.document_patcher.start()
         self.addCleanup(self.document_patcher.stop)
         self.mock_doc_instance = self.mock_document_cls.return_value
@@ -29,7 +28,7 @@ class TestDocsCli(unittest.TestCase):
         self.cli.at_start = True
         self.cli.plaintext = True
 
-        with patch("sys.stdin.read", return_value="content"):
+        with mock.patch("sys.stdin.read", return_value="content"):
             self.cli.run()
 
         self.mock_doc_instance.get_start.assert_called_once()
@@ -37,29 +36,29 @@ class TestDocsCli(unittest.TestCase):
             1, "content", ensure_newline=False
         )
 
-    @patch("rxllmproc.docs.docs_model.DocumentContent")
+    @mock.patch("rxllmproc.docs.docs_model.DocumentContent")
     def test_get_nested(self, mock_doc_content_cls: mock.MagicMock):
         """Test get command with --nested flag."""
         self.cli.command = "get"
         self.cli.nested = True
 
         # Mock the document returned by wrapper
-        mock_doc_entity = MagicMock()
-        mock_doc_entity.body = MagicMock()
+        mock_doc_entity = mock.MagicMock()
+        mock_doc_entity.body = mock.MagicMock()
         self.mock_wrapper.get.return_value = mock_doc_entity
 
         # Mock DocumentContent instance and sections
         mock_content_instance: mock.MagicMock = (
             mock_doc_content_cls.return_value
         )
-        mock_section = MagicMock()
+        mock_section = mock.MagicMock()
         mock_section.as_dict.return_value = {
             "level": "TITLE",
             "text": "My Title",
         }
         mock_content_instance.sections = [mock_section]
 
-        with patch.object(self.cli, "write_output") as mock_write:
+        with mock.patch.object(self.cli, "write_output") as mock_write:
             self.cli.run()
 
             self.mock_wrapper.get.assert_called_with("test_doc")
@@ -76,7 +75,7 @@ class TestDocsCli(unittest.TestCase):
         self.cli.at_index = 10
         self.cli.plaintext = False  # Markdown
 
-        with patch("sys.stdin.read", return_value="# Heading"):
+        with mock.patch("sys.stdin.read", return_value="# Heading"):
             self.cli.run()
 
         self.mock_doc_instance.insert_markdown_at.assert_called_with(
@@ -86,7 +85,7 @@ class TestDocsCli(unittest.TestCase):
     def test_determine_insert_index_section_start(self):
         """Test _determine_insert_index with section_start."""
         self.cli.section_start = True
-        mock_section = MagicMock()
+        mock_section = mock.MagicMock()
         mock_section.end = 50
 
         index = self.cli._determine_insert_index(
@@ -103,7 +102,7 @@ class TestDocsCli(unittest.TestCase):
     def test_determine_insert_index_section_end(self):
         """Test _determine_insert_index with section_end."""
         self.cli.section_end = True
-        mock_section = MagicMock()
+        mock_section = mock.MagicMock()
         mock_section.subsections_end = 100
 
         index = self.cli._determine_insert_index(
@@ -114,7 +113,7 @@ class TestDocsCli(unittest.TestCase):
     def test_determine_insert_index_section_replace_text(self):
         """Test _determine_insert_index with section_replace on text."""
         self.cli.section_replace = True
-        mock_section = MagicMock()
+        mock_section = mock.MagicMock()
         mock_section.level = "text"
         mock_section.start = 10
         mock_section.end = 20
@@ -128,7 +127,7 @@ class TestDocsCli(unittest.TestCase):
     def test_determine_insert_index_section_replace_heading(self):
         """Test _determine_insert_index with section_replace on heading."""
         self.cli.section_replace = True
-        mock_section = MagicMock()
+        mock_section = mock.MagicMock()
         mock_section.level = "HEADING_1"
         mock_section.end = 30
         mock_section.subsections_end = 60
@@ -143,12 +142,12 @@ class TestDocsCli(unittest.TestCase):
         """Test _determine_insert_index with section_replace in dry_run."""
         self.cli.section_replace = True
         self.cli.dry_run = True
-        mock_section = MagicMock()
+        mock_section = mock.MagicMock()
         mock_section.level = "text"
         mock_section.start = 10
         mock_section.end = 20
 
-        with patch.object(self.cli, "_log_dry_run") as mock_log:
+        with mock.patch.object(self.cli, "_log_dry_run") as mock_log:
             index = self.cli._determine_insert_index(
                 self.mock_doc_instance, mock_section
             )

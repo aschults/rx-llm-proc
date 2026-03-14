@@ -1,8 +1,8 @@
-from rxllmproc.docs.markdown_to_gdocs import (
-    convert_markdown_to_requests,
-)
+from rxllmproc.docs.markdown_to_gdocs import convert_markdown_to_requests
 
-from test_support import fail_none  # noqa: E402
+import test_support
+
+fail_none = test_support.fail_none
 
 
 def test_empty_input():

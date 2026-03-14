@@ -7,12 +7,11 @@ import logging
 import threading
 
 import dacite
-from googleapiclient.discovery import build  # type: ignore
-from googleapiclient.errors import HttpError
+from googleapiclient import discovery, errors
 
 from rxllmproc.tasks import types as tasks_types
 from rxllmproc.core import auth, api_base
-from . import _tasks_interface
+from rxllmproc.tasks import _tasks_interface
 
 
 class TaskNotFoundError(Exception):
@@ -129,7 +128,7 @@ class TasksWrap(api_base.ApiBase):
             )
             # The result is a single task dictionary, which can be mangled directly.
             return tasks_types.Task.from_dict(result)
-        except HttpError as e:
+        except errors.HttpError as e:
             if e.status_code == 404:
                 raise TaskNotFoundError(
                     f"Task with ID '{task_id}' not found in list '{tasklist_id}'."
@@ -288,7 +287,7 @@ class TasksWrap(api_base.ApiBase):
         if not hasattr(self._local, 'service'):
             self._local.service = cast(
                 _tasks_interface.TasksServiceInterface,
-                build(
+                discovery.build(
                     "tasks",
                     "v1",
                     credentials=self._creds,

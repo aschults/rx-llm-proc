@@ -6,9 +6,12 @@ import reactivex as rx
 
 from rxllmproc.docs import types as docs_types
 from rxllmproc.docs import docs_text
-from .markdown_to_gdocs import convert_markdown_to_requests
-from .section import Section
+from rxllmproc.docs import markdown_to_gdocs
+from rxllmproc.docs import section
 from rxllmproc.docs import api as docs_wrapper
+
+convert_markdown_to_requests = markdown_to_gdocs.convert_markdown_to_requests
+
 
 MARKER_CHAR = "\u2063"
 
@@ -252,7 +255,7 @@ class Document:
         self,
         patterns: list[str] | None = None,
         heading_id: str | None = None,
-    ) -> Section | None:
+    ) -> section.Section | None:
         """Finds a section based on patterns or heading ID.
 
         Args:
@@ -284,7 +287,7 @@ class Document:
                 else:
                     text_pattern = pattern
 
-                matching_sections = Section.find_sections(
+                matching_sections = section.Section.find_sections(
                     matching_sections,
                     text_pattern=text_pattern,
                     heading_pattern=heading_pattern,
@@ -303,7 +306,7 @@ class Document:
             return matching_sections[0]
 
         if heading_id:
-            matching_sections = Section.find_sections(
+            matching_sections = section.Section.find_sections(
                 self.content.sections, heading_id=heading_id
             )
             if not matching_sections:
@@ -323,7 +326,9 @@ class DocumentContent:
         text_renderer.render_body(self.body)
         self.text = text_renderer.as_string()
 
-        self.sections = Section.create_from(self.body.content, self.text)
+        self.sections = section.Section.create_from(
+            self.body.content, self.text
+        )
 
     def verify_alignment(self):
         """Verify the alignment of the document content."""

@@ -2,39 +2,15 @@
 
 from typing import Any
 
-from rxllmproc.docs.types import (
-    Body,
-    Paragraph,
-    ParagraphElement,
-    ParagraphStyle,
-    SectionBreak,
-    StructuralElement,
-    TextRun,
-    TextStyle,
-    Table,
-    TableRow,
-    TableCell,
-    TableOfContents,
-    DateElement,
-    DateElementProperties,
-    FootnoteReference,
-    HorizontalRule,
-    Person,
-    RichLink,
-    Dimension,
-    ForegroundColor,
-    Color,
-    RgbColor,
-    Link,
-)
+from rxllmproc.docs import types as docs_types
 from rxllmproc.docs import docs_text
 
-DOC_BODY = Body(
+DOC_BODY = docs_types.Body(
     content=[
-        StructuralElement(
+        docs_types.StructuralElement(
             startIndex=1,
             endIndex=1,
-            sectionBreak=SectionBreak(
+            sectionBreak=docs_types.SectionBreak(
                 sectionStyle={
                     "columnSeparatorStyle": "NONE",
                     "contentDirection": "LEFT_TO_RIGHT",
@@ -42,118 +18,122 @@ DOC_BODY = Body(
                 }
             ),
         ),
-        StructuralElement(
+        docs_types.StructuralElement(
             startIndex=1,
             endIndex=18,
-            paragraph=Paragraph(
+            paragraph=docs_types.Paragraph(
                 elements=[
-                    ParagraphElement(
+                    docs_types.ParagraphElement(
                         startIndex=1,
                         endIndex=18,
-                        textRun=TextRun(
+                        textRun=docs_types.TextRun(
                             content="All Elements Doc\n",
-                            textStyle=TextStyle(),
+                            textStyle=docs_types.TextStyle(),
                         ),
                     )
                 ],
-                paragraphStyle=ParagraphStyle(
+                paragraphStyle=docs_types.ParagraphStyle(
                     namedStyleType="TITLE",
                     headingId="h.rusrurcqkyed",
                 ),
             ),
         ),
-        StructuralElement(
+        docs_types.StructuralElement(
             startIndex=18,
             endIndex=19,
-            paragraph=Paragraph(
+            paragraph=docs_types.Paragraph(
                 elements=[
-                    ParagraphElement(
+                    docs_types.ParagraphElement(
                         startIndex=18,
                         endIndex=19,
-                        textRun=TextRun(
+                        textRun=docs_types.TextRun(
                             content="\n",
-                            textStyle=TextStyle(),
+                            textStyle=docs_types.TextStyle(),
                         ),
                     )
                 ],
-                paragraphStyle=ParagraphStyle(
+                paragraphStyle=docs_types.ParagraphStyle(
                     namedStyleType="NORMAL_TEXT",
                 ),
             ),
         ),
-        StructuralElement(
+        docs_types.StructuralElement(
             startIndex=19,
             endIndex=23,
-            paragraph=Paragraph(
+            paragraph=docs_types.Paragraph(
                 elements=[
-                    ParagraphElement(
+                    docs_types.ParagraphElement(
                         startIndex=19,
                         endIndex=23,
-                        textRun=TextRun(
+                        textRun=docs_types.TextRun(
                             content="TOC\n",
-                            textStyle=TextStyle(),
+                            textStyle=docs_types.TextStyle(),
                         ),
                     )
                 ],
-                paragraphStyle=ParagraphStyle(
+                paragraphStyle=docs_types.ParagraphStyle(
                     namedStyleType="NORMAL_TEXT",
                 ),
             ),
         ),
-        StructuralElement(
+        docs_types.StructuralElement(
             startIndex=23,
             endIndex=36,
-            tableOfContents=TableOfContents(
+            tableOfContents=docs_types.TableOfContents(
                 content=[
-                    StructuralElement(
+                    docs_types.StructuralElement(
                         startIndex=24,
                         endIndex=35,
-                        paragraph=Paragraph(
+                        paragraph=docs_types.Paragraph(
                             elements=[
-                                ParagraphElement(
+                                docs_types.ParagraphElement(
                                     startIndex=24,
                                     endIndex=33,
-                                    textRun=TextRun(
+                                    textRun=docs_types.TextRun(
                                         content="Heading2\t",
-                                        textStyle=TextStyle(
+                                        textStyle=docs_types.TextStyle(
                                             bold=True,
-                                            foregroundColor=ForegroundColor(
-                                                color=Color(rgbColor=RgbColor())
+                                            foregroundColor=docs_types.ForegroundColor(
+                                                color=docs_types.Color(
+                                                    rgbColor=docs_types.RgbColor()
+                                                )
                                             ),
-                                            link=Link(
+                                            link=docs_types.Link(
                                                 headingId="h.jd1elpngyb99"
                                             ),
                                         ),
                                     ),
                                 ),
-                                ParagraphElement(
+                                docs_types.ParagraphElement(
                                     startIndex=33,
                                     endIndex=34,
-                                    textRun=TextRun(
+                                    textRun=docs_types.TextRun(
                                         content="1",
-                                        textStyle=TextStyle(
+                                        textStyle=docs_types.TextStyle(
                                             bold=True,
-                                            link=Link(
+                                            link=docs_types.Link(
                                                 headingId="h.jd1elpngyb99"
                                             ),
                                         ),
                                     ),
                                 ),
-                                ParagraphElement(
+                                docs_types.ParagraphElement(
                                     startIndex=34,
                                     endIndex=35,
-                                    textRun=TextRun(
+                                    textRun=docs_types.TextRun(
                                         content="\n",
-                                        textStyle=TextStyle(
+                                        textStyle=docs_types.TextStyle(
                                             bold=True,
-                                            foregroundColor=ForegroundColor(
-                                                color=Color(rgbColor=RgbColor())
+                                            foregroundColor=docs_types.ForegroundColor(
+                                                color=docs_types.Color(
+                                                    rgbColor=docs_types.RgbColor()
+                                                )
                                             ),
                                         ),
                                     ),
                                 ),
                             ],
-                            paragraphStyle=ParagraphStyle(
+                            paragraphStyle=docs_types.ParagraphStyle(
                                 namedStyleType="NORMAL_TEXT"
                             ),
                         ),
@@ -161,74 +141,74 @@ DOC_BODY = Body(
                 ]
             ),
         ),
-        StructuralElement(
+        docs_types.StructuralElement(
             startIndex=36,
             endIndex=43,
-            paragraph=Paragraph(
+            paragraph=docs_types.Paragraph(
                 elements=[
-                    ParagraphElement(
+                    docs_types.ParagraphElement(
                         startIndex=36,
                         endIndex=43,
-                        textRun=TextRun(
+                        textRun=docs_types.TextRun(
                             content="EndTOC\n",
-                            textStyle=TextStyle(),
+                            textStyle=docs_types.TextStyle(),
                         ),
                     )
                 ],
-                paragraphStyle=ParagraphStyle(
+                paragraphStyle=docs_types.ParagraphStyle(
                     namedStyleType="NORMAL_TEXT",
                 ),
             ),
         ),
-        StructuralElement(
+        docs_types.StructuralElement(
             startIndex=43,
             endIndex=44,
-            paragraph=Paragraph(
+            paragraph=docs_types.Paragraph(
                 elements=[
-                    ParagraphElement(
+                    docs_types.ParagraphElement(
                         startIndex=43,
                         endIndex=44,
-                        textRun=TextRun(
+                        textRun=docs_types.TextRun(
                             content="\n",
-                            textStyle=TextStyle(),
+                            textStyle=docs_types.TextStyle(),
                         ),
                     )
                 ],
-                paragraphStyle=ParagraphStyle(
+                paragraphStyle=docs_types.ParagraphStyle(
                     namedStyleType="NORMAL_TEXT",
                 ),
             ),
         ),
-        StructuralElement(
+        docs_types.StructuralElement(
             startIndex=44,
             endIndex=114,
-            table=Table(
+            table=docs_types.Table(
                 columns=3,
                 rows=3,
                 tableRows=[
-                    TableRow(
+                    docs_types.TableRow(
                         startIndex=45,
                         endIndex=70,
                         tableCells=[
-                            TableCell(
+                            docs_types.TableCell(
                                 startIndex=46,
                                 endIndex=56,
                                 content=[
-                                    StructuralElement(
+                                    docs_types.StructuralElement(
                                         startIndex=47,
                                         endIndex=56,
-                                        paragraph=Paragraph(
+                                        paragraph=docs_types.Paragraph(
                                             elements=[
-                                                ParagraphElement(
+                                                docs_types.ParagraphElement(
                                                     startIndex=47,
                                                     endIndex=56,
-                                                    textRun=TextRun(
+                                                    textRun=docs_types.TextRun(
                                                         content="Heading2\n",
-                                                        textStyle=TextStyle(),
+                                                        textStyle=docs_types.TextStyle(),
                                                     ),
                                                 )
                                             ],
-                                            paragraphStyle=ParagraphStyle(
+                                            paragraphStyle=docs_types.ParagraphStyle(
                                                 namedStyleType="HEADING_2",
                                                 headingId="h.jd1elpngyb99",
                                             ),
@@ -236,22 +216,22 @@ DOC_BODY = Body(
                                     )
                                 ],
                             ),
-                            TableCell(
+                            docs_types.TableCell(
                                 startIndex=56,
                                 endIndex=59,
                                 content=[
-                                    StructuralElement(
+                                    docs_types.StructuralElement(
                                         startIndex=57,
                                         endIndex=59,
-                                        paragraph=Paragraph(
+                                        paragraph=docs_types.Paragraph(
                                             elements=[
-                                                ParagraphElement(
+                                                docs_types.ParagraphElement(
                                                     startIndex=57,
                                                     endIndex=58,
-                                                    dateElement=DateElement(
+                                                    dateElement=docs_types.DateElement(
                                                         dateId="kix.6qqmqoxth1t4",
-                                                        textStyle=TextStyle(),
-                                                        dateElementProperties=DateElementProperties(
+                                                        textStyle=docs_types.TextStyle(),
+                                                        dateElementProperties=docs_types.DateElementProperties(
                                                             timestamp="2026-02-13T12:00:00Z",
                                                             locale="en",
                                                             dateFormat="DATE_FORMAT_MONTH_DAY_YEAR_ABBREVIATED",
@@ -260,19 +240,21 @@ DOC_BODY = Body(
                                                         ),
                                                     ),
                                                 ),
-                                                ParagraphElement(
+                                                docs_types.ParagraphElement(
                                                     startIndex=58,
                                                     endIndex=59,
-                                                    textRun=TextRun(
+                                                    textRun=docs_types.TextRun(
                                                         content="\n",
-                                                        textStyle=TextStyle(),
+                                                        textStyle=docs_types.TextStyle(),
                                                     ),
                                                 ),
                                             ],
-                                            paragraphStyle=ParagraphStyle(
+                                            paragraphStyle=docs_types.ParagraphStyle(
                                                 namedStyleType="NORMAL_TEXT",
-                                                indentStart=Dimension(0, "PT"),
-                                                indentFirstLine=Dimension(
+                                                indentStart=docs_types.Dimension(
+                                                    0, "PT"
+                                                ),
+                                                indentFirstLine=docs_types.Dimension(
                                                     0, "PT"
                                                 ),
                                             ),
@@ -280,45 +262,47 @@ DOC_BODY = Body(
                                     )
                                 ],
                             ),
-                            TableCell(
+                            docs_types.TableCell(
                                 startIndex=59,
                                 endIndex=70,
                                 content=[
-                                    StructuralElement(
+                                    docs_types.StructuralElement(
                                         startIndex=60,
                                         endIndex=70,
-                                        paragraph=Paragraph(
+                                        paragraph=docs_types.Paragraph(
                                             elements=[
-                                                ParagraphElement(
+                                                docs_types.ParagraphElement(
                                                     startIndex=60,
                                                     endIndex=68,
-                                                    textRun=TextRun(
+                                                    textRun=docs_types.TextRun(
                                                         content="footnote",
-                                                        textStyle=TextStyle(),
+                                                        textStyle=docs_types.TextStyle(),
                                                     ),
                                                 ),
-                                                ParagraphElement(
+                                                docs_types.ParagraphElement(
                                                     startIndex=68,
                                                     endIndex=69,
-                                                    footnoteReference=FootnoteReference(
+                                                    footnoteReference=docs_types.FootnoteReference(
                                                         footnoteId="kix.idiyz4dleh0l",
                                                         footnoteNumber="1",
-                                                        textStyle=TextStyle(),
+                                                        textStyle=docs_types.TextStyle(),
                                                     ),
                                                 ),
-                                                ParagraphElement(
+                                                docs_types.ParagraphElement(
                                                     startIndex=69,
                                                     endIndex=70,
-                                                    textRun=TextRun(
+                                                    textRun=docs_types.TextRun(
                                                         content="\n",
-                                                        textStyle=TextStyle(),
+                                                        textStyle=docs_types.TextStyle(),
                                                     ),
                                                 ),
                                             ],
-                                            paragraphStyle=ParagraphStyle(
+                                            paragraphStyle=docs_types.ParagraphStyle(
                                                 namedStyleType="NORMAL_TEXT",
-                                                indentStart=Dimension(0, "PT"),
-                                                indentFirstLine=Dimension(
+                                                indentStart=docs_types.Dimension(
+                                                    0, "PT"
+                                                ),
+                                                indentFirstLine=docs_types.Dimension(
                                                     0, "PT"
                                                 ),
                                             ),
@@ -330,32 +314,34 @@ DOC_BODY = Body(
                     ),
                     # Row 2 and 3 omitted for brevity as they follow similar pattern,
                     # but included in full file generation below.
-                    TableRow(
+                    docs_types.TableRow(
                         startIndex=70,
                         endIndex=88,
                         tableCells=[
-                            TableCell(
+                            docs_types.TableCell(
                                 startIndex=71,
                                 endIndex=73,
                                 content=[
-                                    StructuralElement(
+                                    docs_types.StructuralElement(
                                         startIndex=72,
                                         endIndex=73,
-                                        paragraph=Paragraph(
+                                        paragraph=docs_types.Paragraph(
                                             elements=[
-                                                ParagraphElement(
+                                                docs_types.ParagraphElement(
                                                     startIndex=72,
                                                     endIndex=73,
-                                                    textRun=TextRun(
+                                                    textRun=docs_types.TextRun(
                                                         content="\n",
-                                                        textStyle=TextStyle(),
+                                                        textStyle=docs_types.TextStyle(),
                                                     ),
                                                 )
                                             ],
-                                            paragraphStyle=ParagraphStyle(
+                                            paragraphStyle=docs_types.ParagraphStyle(
                                                 namedStyleType="NORMAL_TEXT",
-                                                indentStart=Dimension(0, "PT"),
-                                                indentFirstLine=Dimension(
+                                                indentStart=docs_types.Dimension(
+                                                    0, "PT"
+                                                ),
+                                                indentFirstLine=docs_types.Dimension(
                                                     0, "PT"
                                                 ),
                                             ),
@@ -363,28 +349,30 @@ DOC_BODY = Body(
                                     )
                                 ],
                             ),
-                            TableCell(
+                            docs_types.TableCell(
                                 startIndex=73,
                                 endIndex=86,
                                 content=[
-                                    StructuralElement(
+                                    docs_types.StructuralElement(
                                         startIndex=74,
                                         endIndex=86,
-                                        paragraph=Paragraph(
+                                        paragraph=docs_types.Paragraph(
                                             elements=[
-                                                ParagraphElement(
+                                                docs_types.ParagraphElement(
                                                     startIndex=74,
                                                     endIndex=86,
-                                                    textRun=TextRun(
+                                                    textRun=docs_types.TextRun(
                                                         content="Normal text\n",
-                                                        textStyle=TextStyle(),
+                                                        textStyle=docs_types.TextStyle(),
                                                     ),
                                                 )
                                             ],
-                                            paragraphStyle=ParagraphStyle(
+                                            paragraphStyle=docs_types.ParagraphStyle(
                                                 namedStyleType="NORMAL_TEXT",
-                                                indentStart=Dimension(0, "PT"),
-                                                indentFirstLine=Dimension(
+                                                indentStart=docs_types.Dimension(
+                                                    0, "PT"
+                                                ),
+                                                indentFirstLine=docs_types.Dimension(
                                                     0, "PT"
                                                 ),
                                             ),
@@ -392,28 +380,30 @@ DOC_BODY = Body(
                                     )
                                 ],
                             ),
-                            TableCell(
+                            docs_types.TableCell(
                                 startIndex=86,
                                 endIndex=88,
                                 content=[
-                                    StructuralElement(
+                                    docs_types.StructuralElement(
                                         startIndex=87,
                                         endIndex=88,
-                                        paragraph=Paragraph(
+                                        paragraph=docs_types.Paragraph(
                                             elements=[
-                                                ParagraphElement(
+                                                docs_types.ParagraphElement(
                                                     startIndex=87,
                                                     endIndex=88,
-                                                    textRun=TextRun(
+                                                    textRun=docs_types.TextRun(
                                                         content="\n",
-                                                        textStyle=TextStyle(),
+                                                        textStyle=docs_types.TextStyle(),
                                                     ),
                                                 )
                                             ],
-                                            paragraphStyle=ParagraphStyle(
+                                            paragraphStyle=docs_types.ParagraphStyle(
                                                 namedStyleType="NORMAL_TEXT",
-                                                indentStart=Dimension(0, "PT"),
-                                                indentFirstLine=Dimension(
+                                                indentStart=docs_types.Dimension(
+                                                    0, "PT"
+                                                ),
+                                                indentFirstLine=docs_types.Dimension(
                                                     0, "PT"
                                                 ),
                                             ),
@@ -424,32 +414,34 @@ DOC_BODY = Body(
                         ],
                     ),
                     # Row 3
-                    TableRow(
+                    docs_types.TableRow(
                         startIndex=88,
                         endIndex=113,
                         tableCells=[
-                            TableCell(
+                            docs_types.TableCell(
                                 startIndex=89,
                                 endIndex=91,
                                 content=[
-                                    StructuralElement(
+                                    docs_types.StructuralElement(
                                         startIndex=90,
                                         endIndex=91,
-                                        paragraph=Paragraph(
+                                        paragraph=docs_types.Paragraph(
                                             elements=[
-                                                ParagraphElement(
+                                                docs_types.ParagraphElement(
                                                     startIndex=90,
                                                     endIndex=91,
-                                                    textRun=TextRun(
+                                                    textRun=docs_types.TextRun(
                                                         content="\n",
-                                                        textStyle=TextStyle(),
+                                                        textStyle=docs_types.TextStyle(),
                                                     ),
                                                 )
                                             ],
-                                            paragraphStyle=ParagraphStyle(
+                                            paragraphStyle=docs_types.ParagraphStyle(
                                                 namedStyleType="NORMAL_TEXT",
-                                                indentStart=Dimension(0, "PT"),
-                                                indentFirstLine=Dimension(
+                                                indentStart=docs_types.Dimension(
+                                                    0, "PT"
+                                                ),
+                                                indentFirstLine=docs_types.Dimension(
                                                     0, "PT"
                                                 ),
                                             ),
@@ -457,74 +449,80 @@ DOC_BODY = Body(
                                     )
                                 ],
                             ),
-                            TableCell(
+                            docs_types.TableCell(
                                 startIndex=91,
                                 endIndex=111,
                                 content=[
-                                    StructuralElement(
+                                    docs_types.StructuralElement(
                                         startIndex=92,
                                         endIndex=93,
-                                        paragraph=Paragraph(
+                                        paragraph=docs_types.Paragraph(
                                             elements=[
-                                                ParagraphElement(
+                                                docs_types.ParagraphElement(
                                                     startIndex=92,
                                                     endIndex=93,
-                                                    textRun=TextRun(
+                                                    textRun=docs_types.TextRun(
                                                         content="\n",
-                                                        textStyle=TextStyle(),
+                                                        textStyle=docs_types.TextStyle(),
                                                     ),
                                                 )
                                             ],
-                                            paragraphStyle=ParagraphStyle(
+                                            paragraphStyle=docs_types.ParagraphStyle(
                                                 namedStyleType="NORMAL_TEXT",
-                                                indentStart=Dimension(0, "PT"),
-                                                indentFirstLine=Dimension(
+                                                indentStart=docs_types.Dimension(
+                                                    0, "PT"
+                                                ),
+                                                indentFirstLine=docs_types.Dimension(
                                                     0, "PT"
                                                 ),
                                             ),
                                         ),
                                     ),
-                                    StructuralElement(
+                                    docs_types.StructuralElement(
                                         startIndex=93,
                                         endIndex=110,
-                                        paragraph=Paragraph(
+                                        paragraph=docs_types.Paragraph(
                                             elements=[
-                                                ParagraphElement(
+                                                docs_types.ParagraphElement(
                                                     startIndex=93,
                                                     endIndex=110,
-                                                    textRun=TextRun(
+                                                    textRun=docs_types.TextRun(
                                                         content="Between newlines\n",
-                                                        textStyle=TextStyle(),
+                                                        textStyle=docs_types.TextStyle(),
                                                     ),
                                                 )
                                             ],
-                                            paragraphStyle=ParagraphStyle(
+                                            paragraphStyle=docs_types.ParagraphStyle(
                                                 namedStyleType="NORMAL_TEXT",
-                                                indentStart=Dimension(0, "PT"),
-                                                indentFirstLine=Dimension(
+                                                indentStart=docs_types.Dimension(
+                                                    0, "PT"
+                                                ),
+                                                indentFirstLine=docs_types.Dimension(
                                                     0, "PT"
                                                 ),
                                             ),
                                         ),
                                     ),
-                                    StructuralElement(
+                                    docs_types.StructuralElement(
                                         startIndex=110,
                                         endIndex=111,
-                                        paragraph=Paragraph(
+                                        paragraph=docs_types.Paragraph(
                                             elements=[
-                                                ParagraphElement(
+                                                docs_types.ParagraphElement(
                                                     startIndex=110,
                                                     endIndex=111,
-                                                    textRun=TextRun(
+                                                    textRun=docs_types.TextRun(
                                                         content="\n",
-                                                        textStyle=TextStyle(),
+                                                        textStyle=docs_types.TextStyle(),
                                                     ),
                                                 )
                                             ],
-                                            paragraphStyle=ParagraphStyle(
+                                            paragraphStyle=docs_types.ParagraphStyle(
                                                 namedStyleType="NORMAL_TEXT",
-                                                indentStart=Dimension(0, "PT"),
-                                                indentFirstLine=Dimension(
+                                                indentStart=docs_types.Dimension(
+                                                    0, "PT"
+                                                ),
+                                                indentFirstLine=docs_types.Dimension(
                                                     0, "PT"
                                                 ),
                                             ),
@@ -532,28 +530,30 @@ DOC_BODY = Body(
                                     ),
                                 ],
                             ),
-                            TableCell(
+                            docs_types.TableCell(
                                 startIndex=111,
                                 endIndex=113,
                                 content=[
-                                    StructuralElement(
+                                    docs_types.StructuralElement(
                                         startIndex=112,
                                         endIndex=113,
-                                        paragraph=Paragraph(
+                                        paragraph=docs_types.Paragraph(
                                             elements=[
-                                                ParagraphElement(
+                                                docs_types.ParagraphElement(
                                                     startIndex=112,
                                                     endIndex=113,
-                                                    textRun=TextRun(
+                                                    textRun=docs_types.TextRun(
                                                         content="\n",
-                                                        textStyle=TextStyle(),
+                                                        textStyle=docs_types.TextStyle(),
                                                     ),
                                                 )
                                             ],
-                                            paragraphStyle=ParagraphStyle(
+                                            paragraphStyle=docs_types.ParagraphStyle(
                                                 namedStyleType="NORMAL_TEXT",
-                                                indentStart=Dimension(0, "PT"),
-                                                indentFirstLine=Dimension(
+                                                indentStart=docs_types.Dimension(
+                                                    0, "PT"
+                                                ),
+                                                indentFirstLine=docs_types.Dimension(
                                                     0, "PT"
                                                 ),
                                             ),
@@ -567,234 +567,290 @@ DOC_BODY = Body(
             ),
         ),
         # Remaining paragraphs
-        StructuralElement(
+        docs_types.StructuralElement(
             startIndex=114,
             endIndex=115,
-            paragraph=Paragraph(
+            paragraph=docs_types.Paragraph(
                 elements=[
-                    ParagraphElement(
+                    docs_types.ParagraphElement(
                         startIndex=114,
                         endIndex=115,
-                        textRun=TextRun(content="\n", textStyle=TextStyle()),
+                        textRun=docs_types.TextRun(
+                            content="\n", textStyle=docs_types.TextStyle()
+                        ),
                     )
                 ],
-                paragraphStyle=ParagraphStyle(namedStyleType="NORMAL_TEXT"),
+                paragraphStyle=docs_types.ParagraphStyle(
+                    namedStyleType="NORMAL_TEXT"
+                ),
             ),
         ),
-        StructuralElement(
+        docs_types.StructuralElement(
             startIndex=115,
             endIndex=117,
-            paragraph=Paragraph(
+            paragraph=docs_types.Paragraph(
                 elements=[
-                    ParagraphElement(startIndex=115, endIndex=116),
-                    ParagraphElement(
+                    docs_types.ParagraphElement(startIndex=115, endIndex=116),
+                    docs_types.ParagraphElement(
                         startIndex=116,
                         endIndex=117,
-                        textRun=TextRun(content="\n", textStyle=TextStyle()),
+                        textRun=docs_types.TextRun(
+                            content="\n", textStyle=docs_types.TextStyle()
+                        ),
                     ),
                 ],
-                paragraphStyle=ParagraphStyle(namedStyleType="NORMAL_TEXT"),
+                paragraphStyle=docs_types.ParagraphStyle(
+                    namedStyleType="NORMAL_TEXT"
+                ),
             ),
         ),
-        StructuralElement(
+        docs_types.StructuralElement(
             startIndex=117,
             endIndex=118,
-            paragraph=Paragraph(
+            paragraph=docs_types.Paragraph(
                 elements=[
-                    ParagraphElement(
+                    docs_types.ParagraphElement(
                         startIndex=117,
                         endIndex=118,
-                        textRun=TextRun(content="\n", textStyle=TextStyle()),
+                        textRun=docs_types.TextRun(
+                            content="\n", textStyle=docs_types.TextStyle()
+                        ),
                     )
                 ],
-                paragraphStyle=ParagraphStyle(namedStyleType="NORMAL_TEXT"),
+                paragraphStyle=docs_types.ParagraphStyle(
+                    namedStyleType="NORMAL_TEXT"
+                ),
             ),
         ),
-        StructuralElement(
+        docs_types.StructuralElement(
             startIndex=118,
             endIndex=128,
-            paragraph=Paragraph(
+            paragraph=docs_types.Paragraph(
                 elements=[
-                    ParagraphElement(
+                    docs_types.ParagraphElement(
                         startIndex=118,
                         endIndex=127,
-                        textRun=TextRun(
+                        textRun=docs_types.TextRun(
                             content="some link",
-                            textStyle=TextStyle(
-                                foregroundColor=ForegroundColor(
-                                    color=Color(
-                                        rgbColor=RgbColor(
+                            textStyle=docs_types.TextStyle(
+                                foregroundColor=docs_types.ForegroundColor(
+                                    color=docs_types.Color(
+                                        rgbColor=docs_types.RgbColor(
                                             red=0.06666667,
                                             green=0.33333334,
                                             blue=0.8,
                                         )
                                     )
                                 ),
-                                link=Link(url="http://www.google.com"),
+                                link=docs_types.Link(
+                                    url="http://www.google.com"
+                                ),
                             ),
                         ),
                     ),
-                    ParagraphElement(
+                    docs_types.ParagraphElement(
                         startIndex=127,
                         endIndex=128,
-                        textRun=TextRun(content="\n", textStyle=TextStyle()),
+                        textRun=docs_types.TextRun(
+                            content="\n", textStyle=docs_types.TextStyle()
+                        ),
                     ),
                 ],
-                paragraphStyle=ParagraphStyle(namedStyleType="NORMAL_TEXT"),
+                paragraphStyle=docs_types.ParagraphStyle(
+                    namedStyleType="NORMAL_TEXT"
+                ),
             ),
         ),
-        StructuralElement(
+        docs_types.StructuralElement(
             startIndex=128,
             endIndex=129,
-            paragraph=Paragraph(
+            paragraph=docs_types.Paragraph(
                 elements=[
-                    ParagraphElement(
+                    docs_types.ParagraphElement(
                         startIndex=128,
                         endIndex=129,
-                        textRun=TextRun(content="\n", textStyle=TextStyle()),
+                        textRun=docs_types.TextRun(
+                            content="\n", textStyle=docs_types.TextStyle()
+                        ),
                     )
                 ],
-                paragraphStyle=ParagraphStyle(namedStyleType="NORMAL_TEXT"),
+                paragraphStyle=docs_types.ParagraphStyle(
+                    namedStyleType="NORMAL_TEXT"
+                ),
             ),
         ),
-        StructuralElement(
+        docs_types.StructuralElement(
             startIndex=129,
             endIndex=131,
-            paragraph=Paragraph(
+            paragraph=docs_types.Paragraph(
                 elements=[
-                    ParagraphElement(
+                    docs_types.ParagraphElement(
                         startIndex=129,
                         endIndex=130,
-                        horizontalRule=HorizontalRule(textStyle=TextStyle()),
+                        horizontalRule=docs_types.HorizontalRule(
+                            textStyle=docs_types.TextStyle()
+                        ),
                     ),
-                    ParagraphElement(
+                    docs_types.ParagraphElement(
                         startIndex=130,
                         endIndex=131,
-                        textRun=TextRun(content="\n", textStyle=TextStyle()),
+                        textRun=docs_types.TextRun(
+                            content="\n", textStyle=docs_types.TextStyle()
+                        ),
                     ),
                 ],
-                paragraphStyle=ParagraphStyle(namedStyleType="NORMAL_TEXT"),
+                paragraphStyle=docs_types.ParagraphStyle(
+                    namedStyleType="NORMAL_TEXT"
+                ),
             ),
         ),
-        StructuralElement(
+        docs_types.StructuralElement(
             startIndex=131,
             endIndex=132,
-            paragraph=Paragraph(
+            paragraph=docs_types.Paragraph(
                 elements=[
-                    ParagraphElement(
+                    docs_types.ParagraphElement(
                         startIndex=131,
                         endIndex=132,
-                        textRun=TextRun(content="\n", textStyle=TextStyle()),
+                        textRun=docs_types.TextRun(
+                            content="\n", textStyle=docs_types.TextStyle()
+                        ),
                     )
                 ],
-                paragraphStyle=ParagraphStyle(namedStyleType="NORMAL_TEXT"),
+                paragraphStyle=docs_types.ParagraphStyle(
+                    namedStyleType="NORMAL_TEXT"
+                ),
             ),
         ),
-        StructuralElement(
+        docs_types.StructuralElement(
             startIndex=132,
             endIndex=134,
-            paragraph=Paragraph(
+            paragraph=docs_types.Paragraph(
                 elements=[
-                    ParagraphElement(
+                    docs_types.ParagraphElement(
                         startIndex=132,
                         endIndex=133,
-                        person=Person(
+                        person=docs_types.Person(
                             personProperties={
                                 "name": "info@gonser.ch",
                                 "email": "info@gonser.ch",
                             },
-                            textStyle=TextStyle(),
+                            textStyle=docs_types.TextStyle(),
                         ),
                     ),
-                    ParagraphElement(
+                    docs_types.ParagraphElement(
                         startIndex=133,
                         endIndex=134,
-                        textRun=TextRun(content="\n", textStyle=TextStyle()),
+                        textRun=docs_types.TextRun(
+                            content="\n", textStyle=docs_types.TextStyle()
+                        ),
                     ),
                 ],
-                paragraphStyle=ParagraphStyle(namedStyleType="NORMAL_TEXT"),
+                paragraphStyle=docs_types.ParagraphStyle(
+                    namedStyleType="NORMAL_TEXT"
+                ),
             ),
         ),
-        StructuralElement(
+        docs_types.StructuralElement(
             startIndex=134,
             endIndex=136,
-            paragraph=Paragraph(
+            paragraph=docs_types.Paragraph(
                 elements=[
-                    ParagraphElement(
+                    docs_types.ParagraphElement(
                         startIndex=134,
                         endIndex=136,
-                        textRun=TextRun(content="\n", textStyle=TextStyle()),
+                        textRun=docs_types.TextRun(
+                            content="\n", textStyle=docs_types.TextStyle()
+                        ),
                     )
                 ],
-                paragraphStyle=ParagraphStyle(namedStyleType="NORMAL_TEXT"),
+                paragraphStyle=docs_types.ParagraphStyle(
+                    namedStyleType="NORMAL_TEXT"
+                ),
             ),
         ),
-        StructuralElement(
+        docs_types.StructuralElement(
             startIndex=136,
             endIndex=137,
-            paragraph=Paragraph(
+            paragraph=docs_types.Paragraph(
                 elements=[
-                    ParagraphElement(
+                    docs_types.ParagraphElement(
                         startIndex=136,
                         endIndex=137,
-                        textRun=TextRun(content="\n", textStyle=TextStyle()),
+                        textRun=docs_types.TextRun(
+                            content="\n", textStyle=docs_types.TextStyle()
+                        ),
                     )
                 ],
-                paragraphStyle=ParagraphStyle(namedStyleType="NORMAL_TEXT"),
+                paragraphStyle=docs_types.ParagraphStyle(
+                    namedStyleType="NORMAL_TEXT"
+                ),
             ),
         ),
-        StructuralElement(
+        docs_types.StructuralElement(
             startIndex=137,
             endIndex=139,
-            paragraph=Paragraph(
+            paragraph=docs_types.Paragraph(
                 elements=[
-                    ParagraphElement(
+                    docs_types.ParagraphElement(
                         startIndex=137,
                         endIndex=138,
-                        richLink=RichLink(
+                        richLink=docs_types.RichLink(
                             richLinkProperties={
                                 "title": "Text structures",
                                 "uri": "https://docs.google.com/document/u/0/d/1ZS6AoQcCCydFn955A6_yj8rSSNs-JwbHl8hMQTMizV0/edit",
                                 "mimeType": "application/vnd.google-apps.document",
                             },
-                            textStyle=TextStyle(),
+                            textStyle=docs_types.TextStyle(),
                         ),
                     ),
-                    ParagraphElement(
+                    docs_types.ParagraphElement(
                         startIndex=138,
                         endIndex=139,
-                        textRun=TextRun(content="\n", textStyle=TextStyle()),
+                        textRun=docs_types.TextRun(
+                            content="\n", textStyle=docs_types.TextStyle()
+                        ),
                     ),
                 ],
-                paragraphStyle=ParagraphStyle(namedStyleType="NORMAL_TEXT"),
+                paragraphStyle=docs_types.ParagraphStyle(
+                    namedStyleType="NORMAL_TEXT"
+                ),
             ),
         ),
-        StructuralElement(
+        docs_types.StructuralElement(
             startIndex=139,
             endIndex=140,
-            paragraph=Paragraph(
+            paragraph=docs_types.Paragraph(
                 elements=[
-                    ParagraphElement(
+                    docs_types.ParagraphElement(
                         startIndex=139,
                         endIndex=140,
-                        textRun=TextRun(content="\n", textStyle=TextStyle()),
+                        textRun=docs_types.TextRun(
+                            content="\n", textStyle=docs_types.TextStyle()
+                        ),
                     )
                 ],
-                paragraphStyle=ParagraphStyle(namedStyleType="NORMAL_TEXT"),
+                paragraphStyle=docs_types.ParagraphStyle(
+                    namedStyleType="NORMAL_TEXT"
+                ),
             ),
         ),
-        StructuralElement(
+        docs_types.StructuralElement(
             startIndex=140,
             endIndex=141,
-            paragraph=Paragraph(
+            paragraph=docs_types.Paragraph(
                 elements=[
-                    ParagraphElement(
+                    docs_types.ParagraphElement(
                         startIndex=140,
                         endIndex=141,
-                        textRun=TextRun(content="\n", textStyle=TextStyle()),
+                        textRun=docs_types.TextRun(
+                            content="\n", textStyle=docs_types.TextStyle()
+                        ),
                     )
                 ],
-                paragraphStyle=ParagraphStyle(namedStyleType="NORMAL_TEXT"),
+                paragraphStyle=docs_types.ParagraphStyle(
+                    namedStyleType="NORMAL_TEXT"
+                ),
             ),
         ),
     ]

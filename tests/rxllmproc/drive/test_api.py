@@ -6,7 +6,7 @@ from unittest import mock
 import io
 
 from google.oauth2 import credentials  # type: ignore
-from googleapiclient.http import MediaIoBaseUpload
+from googleapiclient import http
 
 from rxllmproc.drive import api, _interface
 
@@ -78,9 +78,9 @@ class TestWrapper(unittest.TestCase):
             {'name': 'thefn', 'mimeType': 'x/y'},
             self.service.files().create.call_args[1]['body'],
         )
-        uploader: MediaIoBaseUpload = self.service.files().create.call_args[1][
-            'media_body'
-        ]
+        uploader: http.MediaIoBaseUpload = (
+            self.service.files().create.call_args[1]['media_body']
+        )
         uploader_content: Any = uploader.getbytes(0, 5)  # type: ignore
         self.assertEqual(b'abcde', uploader_content)
 
@@ -93,9 +93,9 @@ class TestWrapper(unittest.TestCase):
         self.assertEqual(
             'theid', self.service.files().update.call_args[1]['fileId']
         )
-        uploader: MediaIoBaseUpload = self.service.files().update.call_args[1][
-            'media_body'
-        ]
+        uploader: http.MediaIoBaseUpload = (
+            self.service.files().update.call_args[1]['media_body']
+        )
         uploader_content: Any = uploader.getbytes(0, 5)  # type: ignore
         self.assertEqual(b'abcde', uploader_content)
 

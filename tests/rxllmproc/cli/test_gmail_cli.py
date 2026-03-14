@@ -12,7 +12,9 @@ from rxllmproc.core import auth
 from rxllmproc.gmail import types as gmail_types
 from rxllmproc.cli import gmail_cli
 
-from test_support import fail_none
+import test_support
+
+fail_none = test_support.fail_none
 
 INDEX_CONTENT_THE_ID = [
     {

@@ -10,8 +10,9 @@ from google.genai import types as genai_types
 from google.genai import errors as genai_errors
 from google.api_core import exceptions as google_exceptions
 
-from rxllmproc.core.infra import containers, cache
-from . import commons
+from rxllmproc.core.infra import containers
+from rxllmproc.core.infra import cache
+from rxllmproc.llm import commons
 
 
 def _convert_function_type(tp: str) -> genai_types.Type:

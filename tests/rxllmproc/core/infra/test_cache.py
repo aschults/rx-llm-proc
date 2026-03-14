@@ -5,7 +5,8 @@ from typing import Any
 import unittest
 from unittest import mock
 import datetime
-from rxllmproc.core.infra import containers, cache
+from rxllmproc.core.infra import containers
+from rxllmproc.core.infra import cache
 from test_support import fail_none
 
 

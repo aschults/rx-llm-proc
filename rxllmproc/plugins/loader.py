@@ -6,7 +6,6 @@ Default location for plugins: rxllmproc.plugins.
 from typing import List, Any, Dict
 import pkgutil
 import types
-import rxllmproc.plugins
 import argparse
 
 from rxllmproc.llm import commons as llm_commons
@@ -74,7 +73,14 @@ class _AlternateStorageAction(argparse.Action):
 
 
 # List of namespaces to search plugins from.
-PLUGIN_NAMESPACES_LIST: List[Any] = [rxllmproc.plugins]  # type: ignore
+PLUGIN_NAMESPACES_LIST: List[Any] = []
+
+try:
+    import rxllmproc.plugins
+
+    PLUGIN_NAMESPACES_LIST.append(rxllmproc.plugins)
+except ImportError:
+    pass
 
 
 class PluginRegistry:

@@ -4,8 +4,7 @@ import io
 import logging
 from typing import IO, cast
 
-from googleapiclient.discovery import build  # type: ignore
-from googleapiclient.http import MediaIoBaseUpload
+from googleapiclient import discovery, http
 
 from rxllmproc.drive import types
 from rxllmproc.core import auth, api_base
@@ -33,7 +32,7 @@ class DriveWrap(api_base.ApiBase):
                 is not thread-safe.
         """
         super().__init__(creds)
-        self._service: _interface.DriveInterface = service or build(
+        self._service: _interface.DriveInterface = service or discovery.build(
             'drive',
             'v3',
             credentials=self._creds,
@@ -115,7 +114,7 @@ class DriveWrap(api_base.ApiBase):
         if isinstance(content, str):
             content = io.BytesIO(content.encode())
 
-        media_body = MediaIoBaseUpload(
+        media_body = http.MediaIoBaseUpload(
             cast(io.IOBase, content), mime_type, resumable=True
         )
         return (
@@ -134,7 +133,7 @@ class DriveWrap(api_base.ApiBase):
         if isinstance(content, str):
             content = io.BytesIO(content.encode())
 
-        media_body = MediaIoBaseUpload(
+        media_body = http.MediaIoBaseUpload(
             cast(io.IOBase, content), mimetype=mime_type, resumable=True
         )
 

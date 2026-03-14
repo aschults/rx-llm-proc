@@ -1,10 +1,10 @@
 """A markdown-it-py plugin for indented paragraphs."""
 
-from markdown_it import MarkdownIt
-from markdown_it.rules_block import StateBlock
+import markdown_it
+from markdown_it import rules_block
 
 
-def _get_indent_level(state: StateBlock, start_line: int) -> int:
+def _get_indent_level(state: rules_block.StateBlock, start_line: int) -> int:
     """Gets the indentation level of a line."""
     pos = state.bMarks[start_line] + state.tShift[start_line]
     pos_max = state.eMarks[start_line]
@@ -25,7 +25,10 @@ def _get_indent_level(state: StateBlock, start_line: int) -> int:
 
 
 def _scan_paragraph_end(
-    state: StateBlock, start_line: int, end_line: int, initial_indent_level: int
+    state: rules_block.StateBlock,
+    start_line: int,
+    end_line: int,
+    initial_indent_level: int,
 ) -> int:
     """Scans for the end of a paragraph."""
     next_line = start_line + 1
@@ -51,7 +54,7 @@ def _scan_paragraph_end(
 
 
 def _create_tokens(
-    state: StateBlock,
+    state: rules_block.StateBlock,
     start_line: int,
     next_line: int,
     initial_indent_level: int,
@@ -75,7 +78,7 @@ def _create_tokens(
     state.push("indented_paragraph_close", "p", -1)
 
 
-def indented_paragraph_plugin(md: MarkdownIt):
+def indented_paragraph_plugin(md: markdown_it.MarkdownIt):
     """A markdown-it-py plugin for indented paragraphs.
 
     Syntax:
@@ -84,7 +87,10 @@ def indented_paragraph_plugin(md: MarkdownIt):
     """
 
     def indented_paragraph_rule(
-        state: StateBlock, start_line: int, end_line: int, silent: bool
+        state: rules_block.StateBlock,
+        start_line: int,
+        end_line: int,
+        silent: bool,
     ):
         initial_indent_level = _get_indent_level(state, start_line)
         if not initial_indent_level:

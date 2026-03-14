@@ -1,6 +1,8 @@
 """Support to process Jinja in a defined environment."""
 
-from . import html_processing, email_processing, ProcessingException
+from rxllmproc.text_processing import html_processing
+from rxllmproc.text_processing import email_processing
+from rxllmproc import text_processing
 import logging
 from typing import Any, Iterable, Callable
 
@@ -8,7 +10,7 @@ import jinja2
 import markdownify  # type: ignore
 
 
-class JinjaProcessingException(ProcessingException):
+class JinjaProcessingException(text_processing.ProcessingException):
     """Exception during processing Jinja.
 
     May wrap an original Jinja Exception.

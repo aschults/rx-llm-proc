@@ -8,9 +8,9 @@ from rxllmproc.core import auth
 from rxllmproc.docs import api as docs_api
 from rxllmproc.docs import docs_model
 from rxllmproc.docs import types as docs_types
-from rxllmproc.docs.markdown_to_gdocs import convert_markdown_to_requests
-from rxllmproc.core.infra.utilities import asdict
-from rxllmproc.docs.section import Section
+from rxllmproc.docs import markdown_to_gdocs
+from rxllmproc.core.infra import utilities
+from rxllmproc.docs import section
 from rxllmproc.docs import llm_updater
 from rxllmproc.docs import operators as doc_ops
 
@@ -179,7 +179,7 @@ class DocsCli(cli_base.CommonFileOutputCli):
         return self._wrapper
 
     def _determine_insert_index(
-        self, doc: docs_model.Document, target_section: Section | None
+        self, doc: docs_model.Document, target_section: section.Section | None
     ) -> int:
         """Determines the insertion index and handles section replacement."""
         if self.section_start:
@@ -260,7 +260,9 @@ class DocsCli(cli_base.CommonFileOutputCli):
                     f"Would execute {len(operations)} operations on {self.document_id}"
                 )
                 sys.stderr.write(
-                    json.dumps([asdict(op) for op in operations], indent=2)
+                    json.dumps(
+                        [utilities.asdict(op) for op in operations], indent=2
+                    )
                     + "\n"
                 )
             else:
@@ -295,7 +297,9 @@ class DocsCli(cli_base.CommonFileOutputCli):
 
         if self.dry_run:
             if not self.plaintext:
-                requests = convert_markdown_to_requests(content)
+                requests = markdown_to_gdocs.convert_markdown_to_requests(
+                    content
+                )
             else:
                 requests = [
                     docs_types.DocsRequest(
@@ -308,7 +312,9 @@ class DocsCli(cli_base.CommonFileOutputCli):
             self._log_dry_run(
                 f"Would insert {len(requests)} requests into document {self.document_id} at index {insert_index}"
             )
-            sys.stderr.write(json.dumps(asdict(requests), indent=2) + "\n")
+            sys.stderr.write(
+                json.dumps(utilities.asdict(requests), indent=2) + "\n"
+            )
         else:
             logging.info(
                 "Inserting content into document %s",
@@ -339,7 +345,7 @@ class DocsCli(cli_base.CommonFileOutputCli):
                 json.dumps([s.as_dict() for s in content.sections], indent=2)
             )
         else:
-            self.write_output(json.dumps(asdict(document), indent=2))
+            self.write_output(json.dumps(utilities.asdict(document), indent=2))
 
     def run(self):
         """Execute the action."""

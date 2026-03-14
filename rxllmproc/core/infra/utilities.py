@@ -26,7 +26,7 @@ from typing import (
     Union,
     TypedDict,
 )
-from types import UnionType
+import types
 import dataclasses
 
 # Types that asdict() does not need to convert.
@@ -144,7 +144,7 @@ def _build_sample_origin_types(cls: type[object]) -> Any:
             raise Exception('only accepting strings and ints as keys')
 
         return {sample_key: build_sample(args[1])}
-    if origin is UnionType:
+    if origin is types.UnionType:
         for arg in args:
             if arg is None:
                 continue
@@ -231,7 +231,7 @@ def _build_json_schema_origin_types(cls: type[object]) -> JsonSchema:
             'type': 'object',
             'additionalProperties': build_json_schema(args[1]),
         }
-    if origin is UnionType or origin is Union:
+    if origin is types.UnionType or origin is Union:
         return _build_json_schema_union(args)
 
     return {}
@@ -264,7 +264,7 @@ def build_json_schema(cls: type[object]) -> JsonSchema:
             # Determine if required
             is_optional = False
             origin = get_origin(field.type)
-            if origin is UnionType or origin is Union:
+            if origin is types.UnionType or origin is Union:
                 if type(None) in get_args(field.type):
                     is_optional = True
 

@@ -5,13 +5,13 @@ import sys
 import csv
 import io
 import dataclasses
-from datetime import datetime, timedelta, timezone
+import datetime
 from typing import Any, Literal
 
-from rxllmproc.calendar.api import CalendarWrap
+from rxllmproc.calendar import api as calendar_wrapper
 from rxllmproc.calendar import types
 from rxllmproc.cli import cli_base
-from rxllmproc.core.auth import CredentialsFactory
+from rxllmproc.core import auth
 
 
 class CalendarCli(cli_base.CommonFileOutputCli):
@@ -124,8 +124,8 @@ class CalendarCli(cli_base.CommonFileOutputCli):
 
     def __init__(
         self,
-        creds: CredentialsFactory | None = None,
-        calendar_wrap: CalendarWrap | None = None,
+        creds: auth.CredentialsFactory | None = None,
+        calendar_wrap: calendar_wrapper.CalendarWrap | None = None,
     ) -> None:
         """Construct the instance."""
         super().__init__(creds)
@@ -146,10 +146,12 @@ class CalendarCli(cli_base.CommonFileOutputCli):
         self._wrapper = calendar_wrap
 
     @property
-    def wrapper(self) -> CalendarWrap:
+    def wrapper(self) -> calendar_wrapper.CalendarWrap:
         """Get the Calendar wrapper."""
         if self._wrapper is None:
-            self._wrapper = CalendarWrap(self._get_credentials())
+            self._wrapper = calendar_wrapper.CalendarWrap(
+                self._get_credentials()
+            )
         return self._wrapper
 
     def run_list(self):
@@ -157,8 +159,8 @@ class CalendarCli(cli_base.CommonFileOutputCli):
         time_max = self.time_max
         if not time_max:
             # Default to 90 days in the future
-            now = datetime.now(timezone.utc)
-            future = now + timedelta(days=90)
+            now = datetime.datetime.now(datetime.timezone.utc)
+            future = now + datetime.timedelta(days=90)
             time_max = future.isoformat().replace("+00:00", "Z")
 
         events = self.wrapper.search(

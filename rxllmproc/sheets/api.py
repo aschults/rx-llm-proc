@@ -2,11 +2,12 @@
 
 import logging
 
-from googleapiclient.discovery import build  # type: ignore
+from googleapiclient import discovery
 import dacite
 
-from . import types as sheets_types
-from rxllmproc.core import auth, api_base
+from rxllmproc.sheets import types as sheets_types
+from rxllmproc.core import auth
+from rxllmproc.core import api_base
 from rxllmproc.sheets import _interface
 
 
@@ -27,7 +28,7 @@ class SheetsWrapper(api_base.ApiBase):
                 is not thread-safe.
         """
         super().__init__(creds)
-        self._service: _interface.SheetsInterface = service or build(
+        self._service: _interface.SheetsInterface = service or discovery.build(
             "sheets",
             "v4",
             credentials=self._creds,
