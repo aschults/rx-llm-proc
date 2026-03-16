@@ -12,7 +12,7 @@ from typing import (
     TypedDict,
 )
 
-_T = TypeVar('_T')
+_T = TypeVar('_T', bound=object)
 
 
 class Formula:

@@ -2,7 +2,7 @@
 
 import logging
 import threading
-from typing import TypeVar, Any, Callable
+from typing import Generic, TypeVar, Any, Callable
 
 import reactivex as rx
 from reactivex import operators as ops
@@ -12,10 +12,10 @@ import sqlalchemy
 import sqlalchemy.orm
 from rxllmproc.database import api as database
 
-_T = TypeVar("_T")
+_T = TypeVar("_T", bound=object)
 
 
-class Inserter(rx.Observer[_T]):
+class Inserter(rx.Observer[_T], Generic[_T]):
     """Observer that inserts items into a database transaction."""
 
     def __init__(self, transaction: 'BaseTransaction') -> None:
@@ -51,7 +51,7 @@ class Inserter(rx.Observer[_T]):
             self.on_error(e)
 
 
-class Upserter(rx.Observer[_T]):
+class Upserter(rx.Observer[_T], Generic[_T]):
     """Observer that upserts items into a database transaction."""
 
     def __init__(self, transaction: 'BaseTransaction') -> None:
@@ -156,7 +156,7 @@ def upsert_op(
     return _upsert
 
 
-class QueryObservable(rx.Observable[_T]):
+class QueryObservable(rx.Observable[_T], Generic[_T]):
     """Observable that loads entities from a database query."""
 
     def __init__(

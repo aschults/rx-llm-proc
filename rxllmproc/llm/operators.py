@@ -5,7 +5,7 @@ import reactivex as rx
 from reactivex import operators as ops
 from rxllmproc.core import environment
 
-_T = TypeVar("_T")
+_T = TypeVar("_T", bound=object)
 
 
 def generate_text(

@@ -76,7 +76,7 @@ class _AlternateStorageAction(argparse.Action):
 PLUGIN_NAMESPACES_LIST: List[Any] = []
 
 try:
-    import rxllmproc.plugins
+    import rxllmproc.plugins  # type: ignore
 
     PLUGIN_NAMESPACES_LIST.append(rxllmproc.plugins)
 except ImportError:

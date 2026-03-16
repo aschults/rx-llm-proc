@@ -3,7 +3,9 @@
 from typing import Dict, List, cast
 
 import markdown_it
-from markdown_it import token  # pyright: ignore[reportMissingTypeStubs]
+from markdown_it import (
+    token as markdown_token,
+)  # pyright: ignore[reportMissingTypeStubs]
 
 from rxllmproc.docs import markdownit_indent
 from rxllmproc.docs import types as docs_types
@@ -55,7 +57,7 @@ def convert_markdown_to_requests(markdown_text: str) -> docs_types.DocsRequests:
 
     # We build requests in order, then reverse them at the end for insertion.
     block_requests: List[docs_types.DocsRequests] = []
-    list_token_stack: List[token.Token] = []
+    list_token_stack: List[markdown_token.Token] = []
 
     i = 0
     while i < len(tokens):
@@ -140,7 +142,8 @@ def convert_markdown_to_requests(markdown_text: str) -> docs_types.DocsRequests:
 
 
 def _create_styled_paragraph_requests(
-    inline_token: token.Token, paragraph_style: docs_types.ParagraphStyle
+    inline_token: markdown_token.Token,
+    paragraph_style: docs_types.ParagraphStyle,
 ) -> docs_types.DocsRequests:
     """Creates the API requests for a paragraph with a specific style.
 
@@ -215,9 +218,9 @@ def _create_styled_paragraph_requests(
 
 
 def _create_list_item_requests(
-    inline_token: token.Token,
-    paragraph_open_token: token.Token,
-    list_open_token: token.Token,
+    inline_token: markdown_token.Token,
+    paragraph_open_token: markdown_token.Token,
+    list_open_token: markdown_token.Token,
 ) -> docs_types.DocsRequests:
     """Creates the API requests for a bulleted or numbered list item.
 
@@ -307,7 +310,7 @@ def _create_list_item_requests(
 
 
 def _process_child_token(
-    child: token.Token,
+    child: markdown_token.Token,
     content: str,
     all_requests: docs_types.DocsRequests,
     request_stack: docs_types.DocsRequests,
@@ -364,7 +367,7 @@ def _process_child_token(
 
 
 def _process_inline_token(
-    inline_token: token.Token,
+    inline_token: markdown_token.Token,
 ) -> tuple[docs_types.DocsRequests, docs_types.DocsRequests]:
     """Processes an 'inline' token to extract text and generate styling requests.
 

@@ -48,7 +48,7 @@ sheets_cli = "rxllmproc.cli.sheets_cli:main"
 tasks_cli = "rxllmproc.cli.tasks_cli:main"
 template_cli = "rxllmproc.cli.template_cli:main"
 collaboration_mcp = "rxllmproc.cli.collaboration_mcp:main"
-
+smt_mcp = "rxllmproc.cli.smt_mcp:main"
 
 
 [project.optional-dependencies]
@@ -67,6 +67,8 @@ testing = [
     "types-beautifulsoup4",
     "flake8",
     "pytest-asyncio",
+    "z3-solver",
+    "pytype",
 ]
 
 [tool.pytest.ini_options]
@@ -82,7 +84,7 @@ testpaths = [
 [tool.pyright]
 include = ["rxllmproc/**", "tests/**"]
 # strict = ["rxllmproc", "tests"]
-# stubPath = "./typings"
+stubPath = "./typings"
 typeCheckingMode = "strict"
 venv = ".venv"
 # venvPath = "."
@@ -103,3 +105,13 @@ extraPaths = ["tests"]
 [tool.black]
 line-length = 80
 skip-string-normalization = true
+
+[tool.pytype]
+# The directories to analyze
+inputs = ["rxllmproc"]
+# The directory where your .pyi files are located
+stub_dir = ["typings"]
+# Ensure pytype can find the modules in your project
+pythonpath = "."
+# Optional: Set the Python version
+python_version = "3.10"

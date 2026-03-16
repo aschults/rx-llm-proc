@@ -22,6 +22,7 @@ markdownify
 jinja2
 linkify-it-py
 markdown-it-py
+z3-solver
 
 # Dev only
 coverage>=5.0.3

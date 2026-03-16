@@ -91,3 +91,5 @@ following documents:
 - [[MailCategorizerDesign]]
 - [[DocsUpdaterDesign]]
 - [[LlmUpdaterDesign]]
+- [[CollaborationMCP]]
+- [[SmtMCP]]

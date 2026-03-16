@@ -26,7 +26,9 @@ the tool's specific commands and arguments.
 | `llm_cli`              | Sends a prompt (and optional context) to an LLM and returns the response. | [[LlmCLI]]             |
 | `template_cli`         | Renders [Jinja2](https://jinja.palletsprojects.com/) templates.           | [[TemplateCLI]]        |
 | `conversion_cli`       | A versatile tool to convert between different file formats.               | [[ConversionCLI]]      |
-| `mail_categorizer_cli` | Categorizes emails from an index file using the Gemini API.              | [[MailCategorizerCLI]] |
+| `mail_categorizer_cli` | Categorizes emails from an index file using the Gemini API.               | [[MailCategorizerCLI]] |
+| `collaboration-hub`    | Centralized message bus for inter-agent communication.                    | [[CollaborationMCP]]   |
+| `smt-reasoner`         | Stateful interface to the Z3 SMT solver for logical reasoning.            | [[SmtMCP]]             |
 
 ## Common Concepts
 
@@ -51,52 +53,63 @@ output of `gdrive_cli` directly into `llm_cli`.
 
 ## Argument Handling
 
-Many tools in `rxllmproc` provide advanced ways to pass data through command-line arguments, beyond simple strings.
+Many tools in `rxllmproc` provide advanced ways to pass data through
+command-line arguments, beyond simple strings.
 
 ### File Expansion (`@`)
 
-Whenever an argument value starts with the `@` symbol, the tool treats the following text as a filename and replaces the argument with the **entire content** of that file.
+Whenever an argument value starts with the `@` symbol, the tool treats the
+following text as a filename and replaces the argument with the **entire
+content** of that file.
 
 For example, instead of passing a long prompt directly:
+
 ```bash
 llm_cli "Summarize this: $(cat very_long_text.txt)"
 ```
+
 You can use:
+
 ```bash
 llm_cli @very_long_text.txt
 ```
 
 ### Typed Arguments and JSON Parsing
 
-You can explicitly specify how an argument should be parsed by prefixing it with a type in parentheses. This is particularly useful for passing structured data like JSON.
+You can explicitly specify how an argument should be parsed by prefixing it with
+a type in parentheses. This is particularly useful for passing structured data
+like JSON.
 
 The syntax is `(type)value` or `(type)@filename`.
 
--   **JSON Parsing**: Use `(json)` to parse the value as a JSON object.
-    ```bash
-    # Passing a JSON string directly to a parameter
-    mail_categorizer_cli categorize ... -P "config=(json){\"priority\": \"high\"}"
+- **JSON Parsing**: Use `(json)` to parse the value as a JSON object.
 
-    # Loading JSON from a file for a template variable
-    llm_cli -D "data=(json)@data.json" "Process this data."
-    ```
+  ```bash
+  # Passing a JSON string directly to a parameter
+  mail_categorizer_cli categorize ... -P "config=(json){\"priority\": \"high\"}"
 
--   **Automatic Type Inference**: If you use `()@filename`, the tool will attempt to infer the type from the file extension.
-    ```bash
-    # Equivalent to (json)@config.json
-    llm_cli -D "config=()@config.json"
-    ```
+  # Loading JSON from a file for a template variable
+  llm_cli -D "data=(json)@data.json" "Process this data."
+  ```
+
+- **Automatic Type Inference**: If you use `()@filename`, the tool will attempt
+  to infer the type from the file extension.
+  ```bash
+  # Equivalent to (json)@config.json
+  llm_cli -D "config=()@config.json"
+  ```
 
 ### Named Arguments (Key=Value)
 
-Tools like `llm_cli` (using `-D` / `--define`) and `mail_categorizer_cli` (using `-P` / `--parameter`) accept key-value pairs. These values support the same expansion and typing logic described above.
+Tools like `llm_cli` (using `-D` / `--define`) and `mail_categorizer_cli` (using
+`-P` / `--parameter`) accept key-value pairs. These values support the same
+expansion and typing logic described above.
 
 ```bash
 mail_categorizer_cli categorize ... -P "threshold=0.5" -P "template=@my_prompt.j2" -P "metadata=(json)@meta.json"
 ```
 
 ## Common Arguments
-
 
 Many tools support a set of standard command-line flags:
 
@@ -106,5 +119,7 @@ Many tools support a set of standard command-line flags:
   debugging.
 - **`--help` / `-h`**: Shows a help message listing all available arguments for
   the command.
-- **`--cache <PATH>`**: Path to a cache file for storing responses. See **[[Caching]]**.
-- **`--max_cache_age <DAYS>`**: Maximum age of cache entries in days since last accessed.
+- **`--cache <PATH>`**: Path to a cache file for storing responses. See
+  **[[Caching]]**.
+- **`--max_cache_age <DAYS>`**: Maximum age of cache entries in days since last
+  accessed.

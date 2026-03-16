@@ -131,6 +131,8 @@ class CacheEntry:
         default_factory=lambda: dict()
     )
 
+    lock: threading.Lock = dataclasses.field(init=False)
+
     def __post_init__(self):
         """Add a lock instance on post init."""
         self.lock = threading.Lock()

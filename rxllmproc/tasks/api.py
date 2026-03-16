@@ -269,10 +269,10 @@ class TasksWrap(api_base.ApiBase):
         # Create a copy of the existing task to compare against,
         # ignoring fields that are managed by the server.
         comparable_existing = dataclasses.replace(
-            existing_task, etag=None, updated=None, selfLink=None, position=None
+            existing_task, etag=None, updated=None, selfLink=None, position=0
         )
         comparable_new = dataclasses.replace(
-            task, etag=None, updated=None, selfLink=None, position=None
+            task, etag=None, updated=None, selfLink=None, position=0
         )
 
         if comparable_new == comparable_existing:

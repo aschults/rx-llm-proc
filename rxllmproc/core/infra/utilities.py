@@ -521,12 +521,12 @@ def no_op(input: rx.Observable[_T]) -> rx.Observable[_T]:
 def remove_none() -> Callable[[rx.Observable[_T | None]], rx.Observable[_T]]:
     """Filter out None values from an observable stream."""
 
-    def _not_none(value: _T | None) -> bool:
+    def _not_none(value: Any) -> bool:
         return value is not None
 
-    return rx.compose(
+    return cast(
+        Callable[[rx.Observable[_T | None]], rx.Observable[_T]],
         ops.filter(_not_none),
-        ops.map(lambda x: cast(_T, x)),
     )
 
 

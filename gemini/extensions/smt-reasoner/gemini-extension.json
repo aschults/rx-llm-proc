@@ -1,0 +1,11 @@
+{
+  "name": "smt-reasoner",
+  "version": "0.1.0",
+  "description": "Stateful Z3 SMT Solver extension for formal logic and constraint satisfaction.",
+  "contextFileName": "GEMINI.md",
+  "mcpServers": {
+    "smt-reasoner": {
+      "url": "http://localhost:8001/sse"
+    }
+  }
+}

@@ -4,7 +4,8 @@ import dataclasses
 import base64
 import re
 import logging
-from email import message, parser, policy
+from typing import cast
+from email import parser, policy, message
 import sqlalchemy
 import sqlalchemy.orm
 from rxllmproc.text_processing import email_processing
@@ -154,7 +155,12 @@ class Message:
         if self.payload:
             return self.payload.main_message
 
-        body = self.parsed_msg.get_body(preferencelist=("html", "plain"))
+        # EmailMessage.get_body() returns a Message or EmailMessage based on policy.
+        # With policy.default, it's an EmailMessage.
+        body = cast(
+            message.EmailMessage | None,
+            self.parsed_msg.get_body(preferencelist=("html", "plain")),
+        )
         if body:
             return (body.get_content_type(), body.get_content())
         return None

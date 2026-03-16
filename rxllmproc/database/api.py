@@ -1,6 +1,13 @@
 """Database infrastructure."""
 
-from typing import Any, Type, TypeVar, Callable
+from typing import (
+    Any,
+    Generic,
+    Protocol,
+    TypeVar,
+    Callable,
+    runtime_checkable,
+)
 import logging
 import atexit
 import json
@@ -11,7 +18,7 @@ import dacite
 
 from rxllmproc.core.infra import utilities
 
-_T = TypeVar("_T")
+_T = TypeVar("_T", bound=object)
 
 
 def t(entity: type[object]) -> sqlalchemy.Table:
@@ -20,6 +27,16 @@ def t(entity: type[object]) -> sqlalchemy.Table:
         return getattr(entity, "__table__")  # type: ignore
     else:
         raise ValueError(f'Entity {entity} does not have a __table__ attribute')
+
+
+@runtime_checkable
+class Registerable(Protocol):
+    """Protocol representing a class that can be registered with a database."""
+
+    @classmethod
+    def _register_entity(cls, registry: sqlalchemy.orm.registry) -> None:
+        """Register the class with the given registry."""
+        ...
 
 
 class Database:
@@ -82,14 +99,14 @@ class Database:
 
     def _register_entity(
         self,
-        class_: Type[_T],
+        class_: type[object],
     ) -> None:
         """Register imperative mapping for a class.
 
         Args:
             class_: The class to map.
         """
-        if hasattr(class_, "_register_entity"):
+        if issubclass(class_, Registerable):
             class_._register_entity(self._registry)  # type: ignore
         else:
             raise ValueError(
@@ -97,7 +114,7 @@ class Database:
             )
 
 
-class DataclassJSON(sqlalchemy.TypeDecorator[_T]):
+class DataclassJSON(sqlalchemy.TypeDecorator[_T], Generic[_T]):
     """Serializes Dataclasses to JSONB and deserializes them back.
 
     The dataclass type is specified in the constructor.
@@ -150,7 +167,7 @@ class DataclassJSON(sqlalchemy.TypeDecorator[_T]):
         return dacite.from_dict(self.dataclass_cls, as_dict)
 
 
-class DataclassJSONList(sqlalchemy.TypeDecorator[list[_T]]):
+class DataclassJSONList(sqlalchemy.TypeDecorator[list[object]]):
     """Serializes a list of Dataclasses to JSONB and back.
 
     The dataclass type is specified in the constructor.
@@ -159,7 +176,7 @@ class DataclassJSONList(sqlalchemy.TypeDecorator[list[_T]]):
     impl = sqlalchemy.JSON
     cache_ok = True
 
-    def __init__(self, dataclass_cls: type[_T], *args: Any, **kwargs: Any):
+    def __init__(self, dataclass_cls: type[object], *args: Any, **kwargs: Any):
         """Initialize the DataclassJSONList type decorator.
 
         Args:
@@ -170,7 +187,9 @@ class DataclassJSONList(sqlalchemy.TypeDecorator[list[_T]]):
         super().__init__(*args, **kwargs)
         self.dataclass_cls = dataclass_cls
 
-    def process_bind_param(self, value: list[_T] | None, dialect: Any) -> Any:
+    def process_bind_param(
+        self, value: list[object] | None, dialect: Any
+    ) -> Any:
         """Process the value for binding to a database parameter.
 
         Args:
@@ -186,7 +205,9 @@ class DataclassJSONList(sqlalchemy.TypeDecorator[list[_T]]):
         as_dict_list = [utilities.asdict(item) for item in value]
         return json.dumps(as_dict_list)
 
-    def process_result_value(self, value: Any, dialect: Any) -> list[_T] | None:
+    def process_result_value(
+        self, value: Any, dialect: Any
+    ) -> list[object] | None:
         """Process the value returned from the database.
 
         Args:

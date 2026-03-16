@@ -25,7 +25,15 @@ class TestConversionCli(fake_filesystem_unittest.TestCase):
         html_content = "<h1>Title</h1><p>Some text.</p>"
         self.fs.create_file("input.html", contents=html_content)
 
-        self.instance.main(["input.html", "--output", "output.md"])
+        self.instance.main(
+            [
+                "input.html",
+                "--output",
+                "output.md",
+                "--to-mime-type",
+                "text/markdown",
+            ]
+        )
 
         self.assertTrue(self.fs.exists("output.md"))
         output_file = self.fs.get_object("output.md")
@@ -109,7 +117,15 @@ class TestConversionCli(fake_filesystem_unittest.TestCase):
         self.fs.create_file("input.txt", contents="hello world")
         stderr_output = io.StringIO()
         with contextlib.redirect_stderr(stderr_output):
-            self.instance.main(["input.txt", "--output", "output.md"])
+            self.instance.main(
+                [
+                    "input.txt",
+                    "--output",
+                    "output.md",
+                    "--to-mime-type",
+                    "text/whatever",
+                ]
+            )
 
         mock_exit.assert_called_with(2)
         self.assertIn("is not supported", stderr_output.getvalue())
@@ -121,7 +137,9 @@ class TestConversionCli(fake_filesystem_unittest.TestCase):
         )
         self.fs.create_file("unsafe.html", contents=html_with_script)
 
-        self.instance.main(["unsafe.html", "-o", "safe.md"])
+        self.instance.main(
+            ["unsafe.html", "-o", "safe.md", "--to-mime-type", "text/markdown"]
+        )
 
         self.assertTrue(self.fs.exists("safe.md"))
         output_file = self.fs.get_object("safe.md")
@@ -136,7 +154,14 @@ class TestConversionCli(fake_filesystem_unittest.TestCase):
         stderr_output = io.StringIO()
         with contextlib.redirect_stderr(stderr_output):
             self.instance.main(
-                ["--dry_run", "input.html", "--output", "output.md"]
+                [
+                    "--dry_run",
+                    "input.html",
+                    "--output",
+                    "output.md",
+                    "--to-mime-type",
+                    "text/markdown",
+                ]
             )
 
         self.assertFalse(self.fs.exists("output.md"))

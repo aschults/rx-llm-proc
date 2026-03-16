@@ -11,9 +11,9 @@ from rxllmproc.core import auth
 from rxllmproc.gmail import api as gmail_api
 from rxllmproc.calendar import api as calendar_api
 from rxllmproc.llm import commons as llm_commons
-from rxllmproc.tasks import api as tasks_wrapper
+from rxllmproc.tasks import api as tasks_api
 from rxllmproc.docs import docs_model
-from rxllmproc.docs import api as docs_wrapper
+from rxllmproc.docs import api as docs_api
 from rxllmproc.core.infra import cache, collector
 
 _T = TypeVar("_T")
@@ -77,9 +77,9 @@ class Environment:
 
         self._gmail_wrapper: Optional[gmail_api.GMailWrap] = None
         self._calendar_wrapper: Optional[calendar_api.CalendarWrap] = None
-        self._tasks_wrapper: Optional[tasks_wrapper.TasksWrap] = None
-        self._managed_tasks: Optional[tasks_wrapper.ManagedTasks] = None
-        self._docs_wrapper: Optional[docs_wrapper.DocsWrapper] = None
+        self._tasks_wrapper: Optional[tasks_api.TasksWrap] = None
+        self._managed_tasks: Optional[tasks_api.ManagedTasks] = None
+        self._docs_wrapper: Optional[docs_api.DocsWrapper] = None
 
         # First, set hard coded defaults or shared factories.
         self._settings: EnvArgs = {
@@ -228,28 +228,28 @@ class Environment:
         return self._calendar_wrapper
 
     @property
-    def tasks_wrapper(self) -> tasks_wrapper.TasksWrap:
+    def tasks_wrapper(self) -> tasks_api.TasksWrap:
         """Get or create the Tasks wrapper."""
         if self._tasks_wrapper is None:
-            self._tasks_wrapper = tasks_wrapper.TasksWrap(
+            self._tasks_wrapper = tasks_api.TasksWrap(
                 creds=self.creds,
             )
         return self._tasks_wrapper
 
     @property
-    def docs_wrapper(self) -> docs_wrapper.DocsWrapper:
+    def docs_wrapper(self) -> docs_api.DocsWrapper:
         """Get or create the Docs wrapper."""
         if self._docs_wrapper is None:
-            self._docs_wrapper = docs_wrapper.DocsWrapper(
+            self._docs_wrapper = docs_api.DocsWrapper(
                 creds=self.creds,
             )
         return self._docs_wrapper
 
     @property
-    def managed_tasks(self) -> tasks_wrapper.ManagedTasks:
+    def managed_tasks(self) -> tasks_api.ManagedTasks:
         """Get or create the ManagedTasks wrapper."""
         if self._managed_tasks is None:
-            self._managed_tasks = tasks_wrapper.ManagedTasks(self.tasks_wrapper)
+            self._managed_tasks = tasks_api.ManagedTasks(self.tasks_wrapper)
         return self._managed_tasks
 
     @property

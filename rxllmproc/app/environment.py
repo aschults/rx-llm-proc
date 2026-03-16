@@ -22,7 +22,7 @@ class RxEnvironment(environment.Environment):
         **kwargs: Unpack[RxEnvArgs],
     ) -> None:
         """Initialize the environment."""
-        super().__init__(parent=parent, **kwargs)
+        super().__init__(parent=parent, **kwargs)  # type: ignore
 
     @property
     def db(self) -> sql_operators.RxDatabase:
