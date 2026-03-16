@@ -38,6 +38,27 @@ class TestCalendarWrapper(unittest.TestCase):
             calendarId="primary", q="test query"
         )
 
+    def test_search_with_attendees(self):
+        """Test searching for events and verify 'self' mapping to 'is_self'."""
+        wrapper = calendar_wrapper.CalendarWrap(
+            creds=self.creds, service=self.service
+        )
+        self.service.events().list().execute.return_value = {
+            "items": [
+                {
+                    "id": "event1",
+                    "summary": "Event 1",
+                    "attendees": [{"email": "user@example.com", "self": True}],
+                }
+            ]
+        }
+
+        result = wrapper.search(q="test query")
+
+        self.assertEqual(1, len(result))
+        self.assertEqual(1, len(result[0].attendees))
+        self.assertTrue(result[0].attendees[0].is_self)
+
     def test_create(self):
         """Test creating an event."""
         wrapper = calendar_wrapper.CalendarWrap(
@@ -60,6 +81,39 @@ class TestCalendarWrapper(unittest.TestCase):
                 "summary": "New Event",
                 "kind": "calendar#event",
                 "attendees": [],
+                "attachments": [],
+            },
+        )
+
+    def test_create_with_attendees(self):
+        """Test creating an event with attendees to verify 'is_self' mapping."""
+        wrapper = calendar_wrapper.CalendarWrap(
+            creds=self.creds, service=self.service
+        )
+        attendee = calendar_types.EventAttendee(
+            email="test@example.com", is_self=True
+        )
+        event_to_create = calendar_types.Event(
+            summary="New Event", attendees=[attendee]
+        )
+
+        self.service.events().insert().execute.return_value = {
+            "id": "new_id",
+            "summary": "New Event",
+            "attendees": [{"email": "test@example.com", "self": True}],
+        }
+
+        result = wrapper.create(event_to_create)
+
+        self.assertEqual("new_id", result.id)
+        self.assertTrue(result.attendees[0].is_self)
+
+        self.service.events().insert.assert_called_with(
+            calendarId="primary",
+            body={
+                "summary": "New Event",
+                "kind": "calendar#event",
+                "attendees": [{"email": "test@example.com", "self": True}],
                 "attachments": [],
             },
         )

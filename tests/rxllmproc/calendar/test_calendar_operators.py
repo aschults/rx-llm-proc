@@ -19,7 +19,7 @@ class TestCalendarOperators(unittest.TestCase):
         )
         self.creds_patcher.start()
         # Initialize the environment correctly
-        self.env = environment.Environment()
+        self.env = environment.Environment({})
         self.env.__enter__()
 
     def tearDown(self):

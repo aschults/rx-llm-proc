@@ -160,12 +160,14 @@ class RxMailCategorizerCli(cli_base.CliBase):
         self._collector.start()
 
         env = app_environment.RxEnvironment(
-            db=self.db,
-            model_name=self.model,
-            creds_factory=self.plugins.cred_store,
-            cache_instance=self.cache_instance,
-            collector=self._collector,
-            error_handler=self.error_handler,
+            {
+                'db': self.db,
+                'model_name': self.model,
+                'creds_factory': self.plugins.cred_store,
+                'cache_instance': self.cache_instance,
+                'collector': self._collector,
+                'error_handler': self.error_handler,
+            }
         )
 
         mail_processor = None

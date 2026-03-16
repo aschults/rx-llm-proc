@@ -41,3 +41,4 @@ types-protobuf
 pyright
 flake8
 black
+git+https://github.com/google/pytype.git

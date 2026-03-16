@@ -630,3 +630,20 @@ def error(
     return log(
         logging.ERROR, format_string, logger, stack_level=2, mapper=mapper
     )
+
+
+def remove_none_values(data: Any) -> Any:
+    """Recursively remove None values from dicts and lists."""
+    if isinstance(data, dict):
+        return {
+            k: remove_none_values(v)
+            for k, v in cast(dict[Any, Any], data).items()
+            if v is not None
+        }
+    if isinstance(data, list):
+        return [
+            remove_none_values(v)
+            for v in cast(list[Any], data)
+            if v is not None
+        ]
+    return data

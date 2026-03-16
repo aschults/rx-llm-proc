@@ -2,7 +2,6 @@
 
 import logging
 from typing import Optional, List, Any, Callable, TypedDict, TypeVar
-from typing_extensions import Unpack
 
 import reactivex as rx
 from reactivex import operators as ops
@@ -68,8 +67,8 @@ class Environment:
 
     def __init__(
         self,
+        settings: EnvArgs,
         parent: 'Environment | None' = None,
-        **kwargs: Unpack[EnvArgs],
     ):
         """Initialize the environment, using parent as default, if available."""
         # Initialize all members.
@@ -106,8 +105,8 @@ class Environment:
             self._settings.update(parent._settings)
 
         # Last not least, apply passed args.
-        if kwargs:
-            self._settings.update(kwargs)
+        if settings:
+            self._settings.update(settings)
 
         # Handle creds separately... If not explicitly set then use default.
         if self._settings['creds'] is None and self._settings['creds_factory']:
@@ -118,9 +117,9 @@ class Environment:
         if 'collector' not in self._settings:
             self._settings['collector'] = collector.MemoryCollector()
 
-    def update(self, **kwargs: Unpack[EnvArgs]) -> 'Environment':
+    def update(self, settings: EnvArgs = {}) -> 'Environment':
         """Update the environment settings."""
-        return Environment(parent=self, **kwargs)
+        return Environment(settings, parent=self)
 
     def add(
         self,
@@ -150,11 +149,13 @@ class Environment:
         new_template_filters.update(template_filters or {})
 
         return Environment(
+            {
+                'llm_factory_args': new_llm_factory_args,
+                'functions': list(new_functions.values()),
+                'template_globals': new_template_globals,
+                'template_filters': new_template_filters,
+            },
             parent=self,
-            llm_factory_args=new_llm_factory_args,
-            functions=list(new_functions.values()),
-            template_globals=new_template_globals,
-            template_filters=new_template_filters,
         )
 
     @property

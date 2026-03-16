@@ -332,7 +332,11 @@ class LlmModelFactory:
         """Create a model instance."""
         if name is None:
             name = self.default_model
-        if name not in self._registry:
-            raise KeyError(f'No model wrapper named {name} can be created')
+        if name is None:
+            raise ValueError('No default model set')
 
-        return self._registry[name](**kwargs)
+        model = self._registry.get(name)
+        if not model:
+            raise ValueError(f'No model named {name} can be created')
+
+        return model(**kwargs)

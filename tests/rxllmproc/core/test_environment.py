@@ -32,7 +32,7 @@ class TestEnvironment(unittest.TestCase):
 
     def test_initialization_and_context(self):
         """Test basic initialization and context manager."""
-        env = environment.Environment()
+        env = environment.Environment({})
         with env:
             self.assertIs(environment.Environment.shared(), env)
 
@@ -41,14 +41,14 @@ class TestEnvironment(unittest.TestCase):
 
     def test_nested_environment(self):
         """Test nested environments and inheritance."""
-        env1 = environment.Environment(model_name="model1")
+        env1 = environment.Environment({"model_name": "model1"})
         with env1:
             self.assertEqual(
                 environment.Environment.shared().model_name, "model1"
             )
 
             # env2 inherits from env1 (current shared)
-            env2 = environment.Environment(model_name="model2")
+            env2 = environment.Environment({"model_name": "model2"})
             with env2:
                 self.assertIs(environment.Environment.shared(), env2)
                 self.assertEqual(env2.model_name, "model2")
@@ -62,7 +62,7 @@ class TestEnvironment(unittest.TestCase):
 
     def test_add_method(self):
         """Test the add method for creating child environments."""
-        env1 = environment.Environment(model_name="model1")
+        env1 = environment.Environment({"model_name": "model1"})
         with env1:
             env2 = env1.add(llm_factory_args={"temp": 0.5})
             # env2 is not active yet
@@ -76,18 +76,18 @@ class TestEnvironment(unittest.TestCase):
     def test_update_method(self):
         """Test the update method for creating child environments."""
         env1 = environment.Environment(
-            model_name="model1", llm_factory_args={"temp": 0.1}
+            {"model_name": "model1", "llm_factory_args": {"temp": 0.1}}
         )
 
         # Update creates a new environment inheriting from env1
         # Case 1: Override a value
-        env2 = env1.update(model_name="model2")
+        env2 = env1.update({"model_name": "model2"})
         self.assertEqual(env2.model_name, "model2")
         # Inherits other values
         self.assertEqual(env2.llm_factory_args, {"temp": 0.1})
 
         # Case 2: Override a dictionary (replaces it, does not merge)
-        env3 = env1.update(llm_factory_args={"top_p": 0.5})
+        env3 = env1.update({"llm_factory_args": {"top_p": 0.5}})
         self.assertEqual(env3.llm_factory_args, {"top_p": 0.5})
         # Inherits model_name
         self.assertEqual(env3.model_name, "model1")
@@ -95,7 +95,7 @@ class TestEnvironment(unittest.TestCase):
     @mock.patch('rxllmproc.core.environment.gmail_api.GMailWrap', spec=True)
     def test_wrappers_initialization(self, gmail_mock: mock.MagicMock):
         """Test lazy initialization of wrappers."""
-        env = environment.Environment()
+        env = environment.Environment({})
         with env:
             # Access gmail_wrapper
             wrapper = env.gmail_wrapper
@@ -120,7 +120,7 @@ class TestEnvironment(unittest.TestCase):
     )
     def test_create_model(self, llm_factory_mock: mock.MagicMock):
         """Test creating an LLM model via environment."""
-        env = environment.Environment(model_name="test-model")
+        env = environment.Environment({"model_name": "test-model"})
         with env:
             env.create_model(temperature=0.7)
             llm_factory_mock.shared_instance.return_value.create.assert_called_with(

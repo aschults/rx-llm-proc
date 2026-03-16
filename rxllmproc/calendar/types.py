@@ -20,7 +20,9 @@ class EventAttendee:
     email: str | None = None
     displayName: str | None = None
     organizer: bool | None = None
-    self: bool | None = None
+    # NOTE: Calendar API uses `self` as attribute. As this collides with Python
+    # naming conventions, the attribute is renamed to avoid conflicts.
+    is_self: bool | None = None
     resource: bool | None = None
     optional: bool | None = None
     responseStatus: str | None = None

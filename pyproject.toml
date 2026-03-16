@@ -108,10 +108,20 @@ skip-string-normalization = true
 
 [tool.pytype]
 # The directories to analyze
-inputs = ["rxllmproc"]
 # The directory where your .pyi files are located
 stub_dir = ["typings"]
 # Ensure pytype can find the modules in your project
 pythonpath = "."
 # Optional: Set the Python version
-python_version = "3.10"
+keep_going = true
+strict_import = true
+strict_parameter_checks = true
+strict_primitive_comparisons = true
+precise_return = true
+strict_none_binding = true
+# protocols = true
+none_is_not_bool = true
+overriding_renamed_parameter_count_checks = true
+no_return_any = false
+require_override_decorator = false
+strict_undefined_checks = true

@@ -24,9 +24,9 @@ The `Environment` (found in `rxllmproc/core/environment.py`) is a container for 
 The `Environment` supports hierarchical updates. You can create a new environment that inherits from an existing one but overrides specific settings using the `update()` or `add()` methods.
 
 ```python
-with Environment(model_name="gemini-pro") as env:
+with Environment({"model_name": "gemini-pro"}) as env:
     # Operators here use gemini-pro
-    with env.update(model_name="gemini-lite") as sub_env:
+    with env.update({"model_name": "gemini-lite"}) as sub_env:
         # Operators here use gemini-lite
 ```
 

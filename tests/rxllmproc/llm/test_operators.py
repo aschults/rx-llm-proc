@@ -41,7 +41,7 @@ class TestLlmOperators(unittest.TestCase):
         self.creds_patcher.start()
         self.addCleanup(self.creds_patcher.stop)
 
-        self.env = environment.Environment()
+        self.env = environment.Environment({})
         self.env.__enter__()
         self.addCleanup(lambda: self.env.__exit__(None, None, None))
 

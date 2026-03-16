@@ -1,7 +1,6 @@
 """Shared environment for reactive operators."""
 
 from typing import cast
-from typing_extensions import Unpack
 
 from rxllmproc.database import operators as sql_operators
 from rxllmproc.core import environment
@@ -18,11 +17,11 @@ class RxEnvironment(environment.Environment):
 
     def __init__(
         self,
+        settings: RxEnvArgs,
         parent: environment.Environment | None = None,
-        **kwargs: Unpack[RxEnvArgs],
     ) -> None:
         """Initialize the environment."""
-        super().__init__(parent=parent, **kwargs)  # type: ignore
+        super().__init__(settings, parent=parent)  # type: ignore
 
     @property
     def db(self) -> sql_operators.RxDatabase:
@@ -33,10 +32,10 @@ class RxEnvironment(environment.Environment):
         return settings['db']
 
     def update(  # pyright: ignore[reportIncompatibleMethodOverride]
-        self, **kwargs: Unpack[RxEnvArgs]
+        self, settings: RxEnvArgs = {}
     ) -> 'RxEnvironment':
         """Update the environment with new settings."""
-        return RxEnvironment(parent=self, **kwargs)
+        return RxEnvironment(settings, parent=self)
 
 
 def shared() -> RxEnvironment:
