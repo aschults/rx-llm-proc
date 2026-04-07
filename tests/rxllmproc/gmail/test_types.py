@@ -14,7 +14,9 @@ class TestMessage(unittest.TestCase):
         self.msg = gmail_types.Message(
             payload=gmail_types.MessagePart(
                 mimeType='text/html',
-                headers=[gmail_types.Header('Subject', 'thesubject')],
+                headers=[
+                    gmail_types.Header(name='Subject', value='thesubject')
+                ],
                 body=gmail_types.MessagePartBody(
                     data=base64.urlsafe_b64encode(b'thecontent').decode()
                 ),

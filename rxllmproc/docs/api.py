@@ -1,22 +1,12 @@
 """Google Docs REST interface wrapper."""
 
 import logging
-import dataclasses
-from typing import Any
 
-import dacite
-import dacite.exceptions
 from googleapiclient import discovery
 
 from rxllmproc.docs import types as docs_types
 from rxllmproc.core import auth, api_base
 from rxllmproc.docs import _interface
-
-
-def _as_dict_factory(args: list[tuple[str, Any]]) -> dict[str, Any]:
-    """Dataclass helper to convert datatypes to REST compatible form."""
-    val = {k: v for k, v in args if v is not None}
-    return val
 
 
 class DocsWrapper(api_base.ApiBase):
@@ -55,11 +45,7 @@ class DocsWrapper(api_base.ApiBase):
         )
         body = {
             "requests": [
-                dataclasses.asdict(
-                    request,
-                    dict_factory=_as_dict_factory,
-                )
-                for request in requests
+                request.model_dump(exclude_none=True) for request in requests
             ]
         }
         self._service.documents().batchUpdate(
@@ -79,11 +65,4 @@ class DocsWrapper(api_base.ApiBase):
         logging.info("Retrieving document %s", document_id)
         request = self._service.documents().get(documentId=document_id)
         doc_dict = request.execute()
-        try:
-            return dacite.from_dict(
-                data_class=docs_types.Document, data=doc_dict
-            )
-        except dacite.exceptions.DaciteError:
-            logging.error("failed to deserialize", exc_info=True)
-            logging.error("doc: %s", doc_dict)
-            raise
+        return docs_types.Document.model_validate(doc_dict)

@@ -9,7 +9,7 @@ from typing import Any
 from rxllmproc.llm import operators as llm_operators
 from rxllmproc.text_processing import operators as template_operators
 from rxllmproc.core import environment
-from rxllmproc.llm import commons as llm_commons
+from rxllmproc.llm import api as llm_api
 
 
 @dataclasses.dataclass
@@ -23,16 +23,14 @@ class TestLlmOperators(unittest.TestCase):
     """Test the LLM reactive operators."""
 
     def setUp(self):
-        self.llm_mock = mock.Mock(spec=llm_commons.LlmBase)
-        self.llm_mock.query.side_effect = lambda p: f"Response to: {p}"  # type: ignore
-        self.llm_mock.query_json.side_effect = lambda p: {"response": p}  # type: ignore
-        self.llm_mock.query_json_object.side_effect = lambda t, p: t(response=p)  # type: ignore
+        self.llm_mock = mock.Mock(spec=llm_api.LlmBase)
+        self.llm_mock.query.side_effect = lambda p, **kwargs: f"Response to: {p}"  # type: ignore
+        self.llm_mock.query_json.side_effect = lambda p, **kwargs: {"response": p}  # type: ignore
+        self.llm_mock.query_json_object.side_effect = lambda t, p, **kwargs: t(response=p)  # type: ignore
 
-        patcher = mock.patch(
-            'rxllmproc.llm.commons.LlmModelFactory.shared_instance'
-        )
-        self.factory_mock = patcher.start().return_value
-        self.factory_mock.create.return_value = self.llm_mock
+        patcher = mock.patch('rxllmproc.llm.api.create_model')
+        self.create_model_mock = patcher.start()
+        self.create_model_mock.return_value = self.llm_mock
         self.addCleanup(patcher.stop)
 
         self.creds_patcher = mock.patch(
@@ -56,7 +54,7 @@ class TestLlmOperators(unittest.TestCase):
         self.llm_mock.query.assert_called_with("Hello")
 
     def test_generate_text_with_kwargs(self):
-        """Test generation passing kwargs to factory."""
+        """Test generation passing kwargs to create_model."""
         results: list[str] = []
         source = rx.of("Hello")
 
@@ -64,7 +62,7 @@ class TestLlmOperators(unittest.TestCase):
             llm_operators.generate_text(model="my-model", api_key='testkey')
         ).subscribe(results.append)
 
-        self.factory_mock.create.assert_called_with(
+        self.create_model_mock.assert_called_with(
             "my-model", api_key='testkey', cache_instance=mock.ANY, functions=[]
         )
         self.assertEqual(results, ["Response to: Hello"])

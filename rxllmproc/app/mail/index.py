@@ -2,7 +2,6 @@
 
 import json
 import logging
-import dataclasses
 from os import path
 from typing import Any
 
@@ -32,17 +31,8 @@ class GmailIndexManager:
                     for item in json.loads(self.current_file_content):
                         # For backward compatibility with old indexes
                         item.pop("url", None)
-                        # Filter fields to avoid TypeError on extra fields (mimic pydantic ignore)
-                        valid_fields = {
-                            f.name
-                            for f in dataclasses.fields(types.MailMetadata)
-                        }
-                        filtered_item = {
-                            k: v for k, v in item.items() if k in valid_fields
-                        }
-                        email_index[str(item["id"])] = types.MailMetadata(
-                            **filtered_item
-                        )
+                        metadata = types.MailMetadata.model_validate(item)
+                        email_index[metadata.id] = metadata
             except Exception:
                 logging.error(
                     "Failed to load index file: %s",

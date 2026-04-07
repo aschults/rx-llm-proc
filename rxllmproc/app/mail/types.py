@@ -1,11 +1,11 @@
 """Domain entities and types for mail processing."""
 
-import dataclasses
 import datetime
 import logging
 from email import header
 from email import utils
-from typing import Any
+from typing import Any, Optional
+from pydantic import BaseModel, Field, ConfigDict
 
 import sqlalchemy
 import sqlalchemy.orm
@@ -14,45 +14,40 @@ from rxllmproc.gmail import types as gmail_types
 from rxllmproc.app.analysis import types as analysis_types
 
 
-@dataclasses.dataclass
-class MailMetadata:
+class MailMetadata(BaseModel):
     """Represents a single entry in the email index."""
 
-    id: str = dataclasses.field(
-        metadata={"description": "The unique ID of the email message"},
+    model_config = ConfigDict(
+        from_attributes=True, extra='ignore', arbitrary_types_allowed=True
     )
-    path: str | None = dataclasses.field(
+
+    id: str = Field(description="The unique ID of the email message")
+    path: Optional[str] = Field(
         default=None,
-        metadata={"description": "File path to the stored email content"},
+        description="File path to the stored email content",
     )
-    received_date: str | None = dataclasses.field(
+    received_date: Optional[str] = Field(
         default=None,
-        metadata={
-            "description": "ISO formatted date when the email was received"
-        },
+        description="ISO formatted date when the email was received",
     )
-    subject: str | None = dataclasses.field(
-        default=None, metadata={"description": "Subject line of the email"}
+    subject: Optional[str] = Field(
+        default=None, description="Subject line of the email"
     )
-    snippet: str | None = dataclasses.field(
+    snippet: Optional[str] = Field(
         default=None,
-        metadata={"description": "Short snippet of the email body"},
+        description="Short snippet of the email body",
     )
-    senders: str | None = dataclasses.field(
-        default=None, metadata={"description": "Sender(s) of the email"}
+    senders: Optional[str] = Field(
+        default=None, description="Sender(s) of the email"
     )
-    recipients: str | None = dataclasses.field(
-        default=None, metadata={"description": "Recipient(s) of the email"}
+    recipients: Optional[str] = Field(
+        default=None, description="Recipient(s) of the email"
     )
-    cc: str | None = dataclasses.field(
-        default=None, metadata={"description": "CC recipient(s)"}
-    )
-    bcc: str | None = dataclasses.field(
-        default=None, metadata={"description": "BCC recipient(s)"}
-    )
-    mail_data: gmail_types.Message | None = dataclasses.field(
+    cc: Optional[str] = Field(default=None, description="CC recipient(s)")
+    bcc: Optional[str] = Field(default=None, description="BCC recipient(s)")
+    mail_data: Optional[gmail_types.Message] = Field(
         default=None,
-        metadata={"description": "The full email message data"},
+        description="The full email message data",
     )
 
     @staticmethod
@@ -107,6 +102,15 @@ class MailMetadata:
             mail_data=gmail_msg,
         )
 
+
+class MailMetadataDb:
+    """Database mapped class for MailMetadata."""
+
+    def __init__(self, **kwargs: Any) -> None:
+        """Initialize attributes from kwargs."""
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
     @classmethod
     def _register_entity(cls, registry: sqlalchemy.orm.registry):
         id_column = sqlalchemy.Column(
@@ -136,9 +140,8 @@ class MailMetadata:
             cls,
             table,
             properties={
-                "id": id_column,
                 "mail_data": sqlalchemy.orm.relationship(
-                    gmail_types.Message,
+                    gmail_types.MessageDb,
                     uselist=False,
                     backref="mail_metadata",
                     cascade="all",
@@ -147,13 +150,21 @@ class MailMetadata:
         )
 
 
-@dataclasses.dataclass(kw_only=True)
 class MailSource(analysis_types.Source):
     """Email source data for analysis."""
 
-    mail_metadata: MailMetadata = dataclasses.field(
-        metadata={"description": "Metadata of the email"}
+    mail_metadata: MailMetadata = Field(
+        default_factory=lambda: MailMetadata(id=""),
+        description="Metadata of the email",
     )
+
+
+class MailSourceDb(analysis_types.SourceDb):
+    """Database mapped class for MailSource."""
+
+    def __init__(self, **kwargs: Any) -> None:
+        """Initialize attributes from kwargs."""
+        super().__init__(**kwargs)
 
     @classmethod
     def _register_entity(cls, registry: sqlalchemy.orm.registry):
@@ -175,11 +186,11 @@ class MailSource(analysis_types.Source):
         registry.map_imperatively(
             cls,
             table,
-            inherits=analysis_types.Source,
+            inherits=analysis_types.SourceDb,
             polymorphic_identity="mail_source",
             properties={
                 'mail_metadata': sqlalchemy.orm.relationship(
-                    "MailMetadata",
+                    MailMetadataDb,
                     uselist=False,
                     backref='mail_source',
                     cascade="all",
@@ -188,28 +199,29 @@ class MailSource(analysis_types.Source):
         )
 
 
-@dataclasses.dataclass
-class MailPipelineConfig:
+class MailPipelineConfig(BaseModel):
     """Configuration for processing."""
 
-    gmail_query: str | None = None
+    model_config = ConfigDict(extra='ignore')
+
+    gmail_query: Optional[str] = None
     force_all: bool = False
-    categorization_template: str | None = dataclasses.field(
-        default=None, metadata={'expand_file': True}
+    categorization_template: Optional[str] = Field(
+        default=None, json_schema_extra={'expand_file': True}
     )
-    categories_instructions: str | None = dataclasses.field(
-        default=None, metadata={'expand_file': True}
+    categories_instructions: Optional[str] = Field(
+        default=None, json_schema_extra={'expand_file': True}
     )
-    action_items_instructions: str | None = dataclasses.field(
+    action_items_instructions: Optional[str] = Field(
         default=None,
-        metadata={'expand_file': True},
+        json_schema_extra={'expand_file': True},
     )
-    context_instructions: str | None = dataclasses.field(
-        default=None, metadata={'expand_file': True}
+    context_instructions: Optional[str] = Field(
+        default=None, json_schema_extra={'expand_file': True}
     )
-    define: dict[str, Any] | None = dataclasses.field(
+    define: Optional[dict[str, Any]] = Field(
         default=None,
-        metadata={
+        json_schema_extra={
             'expand_dict': True,
             'expand_values': 'expand_args_typed',
         },
@@ -233,8 +245,9 @@ class MailPipelineConfig:
         return self.categorization_template or ""
 
 
-@dataclasses.dataclass
 class MailConfig(MailPipelineConfig):
     """Configuration for execution."""
+
+    model_config = ConfigDict(extra='ignore')
 
     interval: float = 60

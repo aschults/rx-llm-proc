@@ -1,28 +1,29 @@
 """Google Calendar classes used in steps."""
 
-import dataclasses
 from typing import Any
+from pydantic import BaseModel, Field, ConfigDict
 
 
-@dataclasses.dataclass
-class EventDateTime:
+class EventDateTime(BaseModel):
     """Date and time of an event."""
+
+    model_config = ConfigDict(extra='ignore')
 
     date: str | None = None
     dateTime: str | None = None
     timeZone: str | None = None
 
 
-@dataclasses.dataclass
-class EventAttendee:
+class EventAttendee(BaseModel):
     """Attendee of an event."""
+
+    model_config = ConfigDict(populate_by_name=True, extra='ignore')
 
     email: str | None = None
     displayName: str | None = None
     organizer: bool | None = None
-    # NOTE: Calendar API uses `self` as attribute. As this collides with Python
-    # naming conventions, the attribute is renamed to avoid conflicts.
-    is_self: bool | None = None
+    # NOTE: Calendar API uses `self` as attribute.
+    is_self: bool | None = Field(None, alias="self")
     resource: bool | None = None
     optional: bool | None = None
     responseStatus: str | None = None
@@ -30,27 +31,28 @@ class EventAttendee:
     additionalGuests: int | None = None
 
 
-@dataclasses.dataclass
-class EventReminder:
+class EventReminder(BaseModel):
     """Reminder for an event."""
+
+    model_config = ConfigDict(extra='ignore')
 
     method: str | None = None
     minutes: int | None = None
 
 
-@dataclasses.dataclass
-class EventReminders:
+class EventReminders(BaseModel):
     """Reminders for an event."""
 
+    model_config = ConfigDict(extra='ignore')
+
     useDefault: bool | None = None
-    overrides: list[EventReminder] = dataclasses.field(
-        default_factory=lambda: []
-    )
+    overrides: list[EventReminder] = Field(default_factory=lambda: [])
 
 
-@dataclasses.dataclass
-class EventAttachment:
+class EventAttachment(BaseModel):
     """Attachment of an event."""
+
+    model_config = ConfigDict(extra='ignore')
 
     fileUrl: str | None = None
     title: str | None = None
@@ -59,9 +61,10 @@ class EventAttachment:
     fileId: str | None = None
 
 
-@dataclasses.dataclass
-class Event:
+class Event(BaseModel):
     """Represents one calendar event."""
+
+    model_config = ConfigDict(populate_by_name=True, extra='ignore')
 
     kind: str = "calendar#event"
     etag: str | None = None
@@ -86,9 +89,7 @@ class Event:
     visibility: str | None = None
     iCalUID: str | None = None
     sequence: int | None = None
-    attendees: list[EventAttendee] = dataclasses.field(
-        default_factory=lambda: []
-    )
+    attendees: list[EventAttendee] = Field(default_factory=lambda: [])
     attendeesOmitted: bool | None = None
     extendedProperties: dict[str, Any] | None = None
     hangoutLink: str | None = None
@@ -102,7 +103,5 @@ class Event:
     locked: bool | None = None
     reminders: EventReminders | None = None
     source: dict[str, Any] | None = None
-    attachments: list[EventAttachment] = dataclasses.field(
-        default_factory=lambda: []
-    )
+    attachments: list[EventAttachment] = Field(default_factory=lambda: [])
     eventType: str | None = None

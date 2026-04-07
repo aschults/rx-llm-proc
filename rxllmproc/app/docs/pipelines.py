@@ -2,7 +2,7 @@
 
 import logging
 import re
-from typing import Any, Callable
+from typing import Any, Callable, Iterable, cast
 from abc import ABC, abstractmethod
 
 import reactivex as rx
@@ -18,7 +18,7 @@ from rxllmproc.docs import operators as docs_operators
 from rxllmproc.app import environment as app_environment
 from rxllmproc.app.analysis import types as analysis_types
 from rxllmproc.docs import docs_model
-from rxllmproc.llm import commons as llm_commons
+from rxllmproc.llm import api as llm_api
 from rxllmproc.app.docs import types as docs_types
 
 _TODO_MARKDOWN_TEMPLATE = """
@@ -107,12 +107,13 @@ class MarkdownInserter(ABC):
             placement_table.c.analysis_id,
             placement_table.c.action_number,
         ).where(
-            sqlalchemy.and_(
-                placement_table.c.placement_container_url == self.document.url,
-                placement_table.c.placement_id == '(None)',
-            )
+            placement_table.c.placement_container_url == self.document.url,
+            placement_table.c.placement_id == '(None)',
         )
-        result = self.db.session.execute(stmt).tuples().all()
+        result = cast(
+            Iterable[tuple[str, int]],
+            self.db.session.execute(stmt).tuples().all(),  # pyright: ignore
+        )
         return set((str(row[0]), int(row[1])) for row in result)
 
     def _refresh_processed_placements(self, _: Any) -> None:
@@ -174,10 +175,16 @@ class MarkdownInserter(ABC):
         )
 
     def _add_processed(self, item: analysis_types.ActionItemPlacement) -> None:
-        if item.analysis_id is not None:
-            self.processed_placements.add(
-                (item.analysis_id, item.action_number)
+        if item.analysis_id is None:
+            return
+        self.processed_placements.add(
+            (
+                cast(
+                    str, item.analysis_id
+                ),  # pyright: ignore[reportUnnecessaryCast]
+                item.action_number,
             )
+        )
 
     def _not_none(self, x: Any) -> bool:
         return x is not None
@@ -245,7 +252,7 @@ class MarkdownLlmInserter(MarkdownInserter):
         self,
         document: docs_model.Document,
         config: docs_types.DocsPipelineConfig,
-        llm: llm_commons.LlmBase | str | None = None,
+        llm: llm_api.LlmBase | str | None = None,
         env: app_environment.RxEnvironment | None = None,
     ) -> None:
         """Initialize the MarkdownLlmInserter."""

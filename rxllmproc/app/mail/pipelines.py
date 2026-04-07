@@ -125,7 +125,7 @@ class MailPipeline:
                         result_type=analysis_types.Analysis,
                     ),
                     ops.map(
-                        lambda analysis: types.MailSource(
+                        lambda analysis: types.MailSource(  # pytype: disable=wrong-keyword-args
                             id=mail_metadata.url,
                             mail_metadata=mail_metadata,
                             analysis=analysis,

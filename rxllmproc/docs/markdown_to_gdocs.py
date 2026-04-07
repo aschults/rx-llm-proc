@@ -343,7 +343,7 @@ def _process_child_token(
                 fields=",".join(
                     [
                         f
-                        for f in text_style.__dataclass_fields__
+                        for f in text_style.__class__.model_fields
                         if getattr(text_style, f) is not None
                     ]
                 ),
@@ -424,7 +424,7 @@ def _create_inline_style_request(
             fields=",".join(
                 [
                     f
-                    for f in style.__dataclass_fields__
+                    for f in style.__class__.model_fields
                     if getattr(style, f) is not None
                 ]
             ),

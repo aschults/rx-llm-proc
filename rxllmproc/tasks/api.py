@@ -1,12 +1,10 @@
 """Google Tasks REST interface wrapper."""
 
 from typing import Any, cast, Generator, Iterator
-import dataclasses
 import re
 import logging
 import threading
 
-import dacite
 from googleapiclient import discovery, errors
 
 from rxllmproc.tasks import types as tasks_types
@@ -42,14 +40,7 @@ class TasksWrap(api_base.ApiBase):
         """Generate all tasklists."""
         result = self._service.tasklists().list(maxResults=100).execute()
 
-        cfg = dacite.Config(
-            type_hooks={tasks_types.TaskList: tasks_types.TaskList.from_dict}
-        )
-        response_obj = dacite.from_dict(
-            _tasks_interface.TaskListResponse,
-            result,
-            config=cfg,
-        )
+        response_obj = _tasks_interface.TaskListResponse.model_validate(result)
         for item in response_obj.items:
             yield item
 
@@ -82,13 +73,8 @@ class TasksWrap(api_base.ApiBase):
                     .execute()
                 )
 
-                cfg = dacite.Config(
-                    type_hooks={tasks_types.Task: tasks_types.Task.from_dict}
-                )
-                response_obj = dacite.from_dict(
-                    _tasks_interface.TaskResponse,
-                    result,
-                    config=cfg,
+                response_obj = _tasks_interface.TaskResponse.model_validate(
+                    result
                 )
                 for item in response_obj.items:
                     yield current_tasklist_id, item
@@ -126,8 +112,7 @@ class TasksWrap(api_base.ApiBase):
                 .get(tasklist=tasklist_id, task=task_id)
                 .execute()
             )
-            # The result is a single task dictionary, which can be mangled directly.
-            return tasks_types.Task.from_dict(result)
+            return tasks_types.Task.model_validate(result)
         except errors.HttpError as e:
             if e.status_code == 404:
                 raise TaskNotFoundError(
@@ -164,20 +149,18 @@ class TasksWrap(api_base.ApiBase):
             kwargs['parent'] = task.parent
 
         try:
+            body = task.model_dump(mode='json', exclude_none=True)
             result = (
                 self._service.tasks()
                 .insert(
-                    body=dataclasses.asdict(
-                        task,
-                        dict_factory=tasks_types.as_dict_factory,
-                    ),
+                    body=body,
                     tasklist=tasklist.id,
                     **kwargs,
                 )
                 .execute()
             )
 
-            response_obj = tasks_types.Task.from_dict(result)
+            response_obj = tasks_types.Task.model_validate(result)
 
         except Exception:
             logging.error("Failure to add task: %s", task, exc_info=True)
@@ -200,20 +183,18 @@ class TasksWrap(api_base.ApiBase):
         if not task.id:
             raise ValueError('Task must have an ID to be updated.')
 
+        body = task.model_dump(mode='json', exclude_none=True)
         result = (
             self._service.tasks()
             .update(
                 tasklist=tasklist_id,
                 task=task.id,
-                body=dataclasses.asdict(
-                    task,
-                    dict_factory=tasks_types.as_dict_factory,
-                ),
+                body=body,
             )
             .execute()
         )
 
-        response_obj = tasks_types.Task.from_dict(result)
+        response_obj = tasks_types.Task.model_validate(result)
         # Update the task object with the new state from the server
         task.etag = response_obj.etag
         task.updated = response_obj.updated
@@ -235,7 +216,7 @@ class TasksWrap(api_base.ApiBase):
             .execute()
         )
 
-        return tasks_types.Task.from_dict(result)
+        return tasks_types.Task.model_validate(result)
 
     def upsert_task(
         self,
@@ -268,11 +249,21 @@ class TasksWrap(api_base.ApiBase):
         # Task exists, check for differences before updating.
         # Create a copy of the existing task to compare against,
         # ignoring fields that are managed by the server.
-        comparable_existing = dataclasses.replace(
-            existing_task, etag=None, updated=None, selfLink=None, position=0
+        comparable_existing = existing_task.model_copy(
+            update={
+                "etag": None,
+                "updated": None,
+                "selfLink": None,
+                "position": 0,
+            }
         )
-        comparable_new = dataclasses.replace(
-            task, etag=None, updated=None, selfLink=None, position=0
+        comparable_new = task.model_copy(
+            update={
+                "etag": None,
+                "updated": None,
+                "selfLink": None,
+                "position": 0,
+            }
         )
 
         if comparable_new == comparable_existing:
@@ -343,7 +334,7 @@ class ManagedTasks:
             if task.id:
                 found_id_url = self._get_id_url(task)
                 if found_id_url == id_url:
-                    task_dict = dataclasses.asdict(task)
+                    task_dict = task.model_dump()
                     # Use the tasklist ID from the generator, which is always correct.
                     return tasks_types.ManagedTask(
                         id_url=id_url,
@@ -368,16 +359,16 @@ class ManagedTasks:
         updates: tasks_types.ManagedTask,
     ) -> bool:
         is_dirty = False
-        for field in dataclasses.fields(updates):
-            if field.name in self._SKIP_FIELDS_ON_MANAGED_UPSERT:
+        for field_name in updates.__class__.model_fields:
+            if field_name in self._SKIP_FIELDS_ON_MANAGED_UPSERT:
                 continue
-            value: Any = getattr(updates, field.name)
+            value: Any = getattr(updates, field_name)
             if value is None:
                 continue
-            target_value = getattr(target, field.name)
+            target_value = getattr(target, field_name)
             if value != target_value:
                 is_dirty = True
-            setattr(target, field.name, value)
+            setattr(target, field_name, value)
 
         return is_dirty
 
@@ -456,7 +447,7 @@ class ManagedTasks:
             tasklist_id
         ):
             id_url = self._get_id_url(task)
-            task_dict = dataclasses.asdict(task)
+            task_dict = task.model_dump()
             if id_url:
                 yield tasks_types.ManagedTask(
                     id_url=id_url, tasklist_id=current_tasklist_id, **task_dict

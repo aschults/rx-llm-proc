@@ -6,6 +6,7 @@ from typing import (
     Protocol,
     TypeVar,
     Callable,
+    cast,
     runtime_checkable,
 )
 import logging
@@ -14,9 +15,7 @@ import json
 
 import sqlalchemy
 import sqlalchemy.orm
-import dacite
-
-from rxllmproc.core.infra import utilities
+import pydantic
 
 _T = TypeVar("_T", bound=object)
 
@@ -58,8 +57,9 @@ class Database:
             engine_args: Additional arguments for the SQLAlchemy engine.
         """
         logging.info("Connecting to database: %s", db_url)
-        self._engine: Any = sqlalchemy.create_engine(
-            db_url, **(engine_args or {})
+        self._engine = cast(  # pyright: ignore
+            sqlalchemy.engine.Engine,
+            sqlalchemy.create_engine(db_url, **(engine_args or {})),
         )
         self._session_factory = sqlalchemy.orm.sessionmaker(bind=self._engine)
         self._scoped_session = sqlalchemy.orm.scoped_session(
@@ -114,118 +114,6 @@ class Database:
             )
 
 
-class DataclassJSON(sqlalchemy.TypeDecorator[_T], Generic[_T]):
-    """Serializes Dataclasses to JSONB and deserializes them back.
-
-    The dataclass type is specified in the constructor.
-    """
-
-    impl = sqlalchemy.JSON
-    cache_ok = True
-
-    def __init__(self, dataclass_cls: type[_T], *args: Any, **kwargs: Any):
-        """Initialize the DataclassJSON type decorator.
-
-        Args:
-            dataclass_cls: The dataclass type to serialize/deserialize.
-            *args: Additional arguments for the TypeDecorator.
-            **kwargs: Additional keyword arguments for the TypeDecorator.
-        """
-        super().__init__(*args, **kwargs)
-        self.dataclass_cls = dataclass_cls
-
-    def process_bind_param(self, value: _T | None, dialect: Any) -> Any:
-        """Process the value for binding to a database parameter.
-
-        Args:
-            value: The value to process.
-            dialect: The dialect in use.
-
-        Returns:
-            The processed value.
-        """
-        # Convert Dataclass -> Dictionary for the DB driver
-        if value is None:
-            return None
-        as_dict = utilities.asdict(value)
-        return json.dumps(as_dict)
-
-    def process_result_value(self, value: Any, dialect: Any) -> _T | None:
-        """Process the value returned from the database.
-
-        Args:
-            value: The value to process.
-            dialect: The dialect in use.
-
-        Returns:
-            The processed value.
-        """
-        # Convert Dictionary (from DB) -> Dataclass
-        if value is None:
-            return None
-        as_dict = json.loads(value)
-        return dacite.from_dict(self.dataclass_cls, as_dict)
-
-
-class DataclassJSONList(sqlalchemy.TypeDecorator[list[object]]):
-    """Serializes a list of Dataclasses to JSONB and back.
-
-    The dataclass type is specified in the constructor.
-    """
-
-    impl = sqlalchemy.JSON
-    cache_ok = True
-
-    def __init__(self, dataclass_cls: type[object], *args: Any, **kwargs: Any):
-        """Initialize the DataclassJSONList type decorator.
-
-        Args:
-            dataclass_cls: The dataclass type to serialize/deserialize.
-            *args: Additional arguments for the TypeDecorator.
-            **kwargs: Additional keyword arguments for the TypeDecorator.
-        """
-        super().__init__(*args, **kwargs)
-        self.dataclass_cls = dataclass_cls
-
-    def process_bind_param(
-        self, value: list[object] | None, dialect: Any
-    ) -> Any:
-        """Process the value for binding to a database parameter.
-
-        Args:
-            value: The value to process.
-            dialect: The dialect in use.
-
-        Returns:
-            The processed value.
-        """
-        # Convert Dataclass -> Dictionary for the DB driver
-        if value is None:
-            return None
-        as_dict_list = [utilities.asdict(item) for item in value]
-        return json.dumps(as_dict_list)
-
-    def process_result_value(
-        self, value: Any, dialect: Any
-    ) -> list[object] | None:
-        """Process the value returned from the database.
-
-        Args:
-            value: The value to process.
-            dialect: The dialect in use.
-
-        Returns:
-            The processed value.
-        """
-        # Convert Dictionary (from DB) -> Dataclass
-        if value is None:
-            return None
-        as_dict_list = json.loads(value)
-        return [
-            dacite.from_dict(self.dataclass_cls, item) for item in as_dict_list
-        ]
-
-
 class StringListJSON(sqlalchemy.TypeDecorator[list[str]]):
     """Serializes a list of strings to JSONB and back."""
 
@@ -233,15 +121,7 @@ class StringListJSON(sqlalchemy.TypeDecorator[list[str]]):
     cache_ok = True
 
     def process_bind_param(self, value: list[str] | None, dialect: Any) -> Any:
-        """Process the value for binding to a database parameter.
-
-        Args:
-            value: The value to process.
-            dialect: The dialect in use.
-
-        Returns:
-            The processed value.
-        """
+        """Process the value for binding to a database parameter."""
         if value is None:
             return None
         return json.dumps(value)
@@ -249,15 +129,61 @@ class StringListJSON(sqlalchemy.TypeDecorator[list[str]]):
     def process_result_value(
         self, value: Any, dialect: Any
     ) -> list[str] | None:
-        """Process the value returned from the database.
-
-        Args:
-            value: The value to process.
-            dialect: The dialect in use.
-
-        Returns:
-            The processed value.
-        """
+        """Process the value returned from the database."""
         if value is None:
             return None
         return json.loads(value)
+
+
+class PydanticJSON(sqlalchemy.TypeDecorator[_T], Generic[_T]):
+    """Serializes Pydantic models to JSON and deserializes them back."""
+
+    impl = sqlalchemy.JSON
+    cache_ok = True
+
+    def __init__(self, pydantic_cls: type[_T], *args: Any, **kwargs: Any):
+        """Initialize the PydanticJSON type decorator."""
+        super().__init__(*args, **kwargs)
+        self.pydantic_cls = pydantic_cls
+        self._adapter = pydantic.TypeAdapter(self.pydantic_cls)
+
+    def process_bind_param(self, value: _T | None, dialect: Any) -> Any:
+        """Process the value for binding to a database parameter."""
+        if value is None:
+            return None
+        return self._adapter.dump_json(value).decode('utf-8')
+
+    def process_result_value(self, value: Any, dialect: Any) -> _T | None:
+        """Process the value returned from the database."""
+        if value is None:
+            return None
+        if isinstance(value, str):
+            return self._adapter.validate_json(value)
+        return self._adapter.validate_python(value)
+
+
+class PydanticJSONList(sqlalchemy.TypeDecorator[list[_T]], Generic[_T]):
+    """Serializes a list of Pydantic models to JSON and back."""
+
+    impl = sqlalchemy.JSON
+    cache_ok = True
+
+    def __init__(self, pydantic_cls: type[_T], *args: Any, **kwargs: Any):
+        """Initialize the PydanticJSONList type decorator."""
+        super().__init__(*args, **kwargs)
+        self.pydantic_cls = pydantic_cls
+        self._adapter = pydantic.TypeAdapter(list[self.pydantic_cls])
+
+    def process_bind_param(self, value: list[_T] | None, dialect: Any) -> Any:
+        """Process the value for binding to a database parameter."""
+        if value is None:
+            return None
+        return self._adapter.dump_json(value).decode('utf-8')
+
+    def process_result_value(self, value: Any, dialect: Any) -> list[_T] | None:
+        """Process the value returned from the database."""
+        if value is None:
+            return None
+        if isinstance(value, str):
+            return self._adapter.validate_json(value)
+        return self._adapter.validate_python(value)

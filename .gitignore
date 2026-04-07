@@ -9,7 +9,7 @@ build/
 *.lcov
 .vscode/
 .pytype
-.venv/
+.venv*/
 .pytest_cache
 examples/*/results
 examples/**/deps.mk

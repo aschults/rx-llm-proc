@@ -1,19 +1,21 @@
 """GMail classes (from REST interface) used in steps."""
 
-import dataclasses
 import base64
 import re
 import logging
-from typing import cast
+from typing import cast, Any, Optional, List
 from email import parser, policy, message
+from pydantic import BaseModel, Field, ConfigDict, PrivateAttr
+
 import sqlalchemy
 import sqlalchemy.orm
 from rxllmproc.text_processing import email_processing
 
 
-@dataclasses.dataclass
-class Header:
+class Header(BaseModel):
     """Single email header."""
+
+    model_config = ConfigDict(extra='ignore')
 
     name: str
     value: str
@@ -31,25 +33,27 @@ class Header:
         return None
 
 
-@dataclasses.dataclass
-class MessagePartBody:
+class MessagePartBody(BaseModel):
     """Body of an email part."""
+
+    model_config = ConfigDict(extra='ignore')
 
     attachmentId: str | None = None
     size: int | None = None
     data: str | None = None
 
 
-@dataclasses.dataclass
-class MessagePart:
+class MessagePart(BaseModel):
     """Part of a message."""
+
+    model_config = ConfigDict(extra='ignore')
 
     partId: str | None = None
     mimeType: str | None = None
     filename: str | None = None
-    headers: list[Header] = dataclasses.field(default_factory=lambda: [])
-    body: MessagePartBody = dataclasses.field(default_factory=MessagePartBody)
-    parts: "list[MessagePart]" = dataclasses.field(default_factory=lambda: [])
+    headers: List[Header] = Field(default_factory=lambda: [])
+    body: MessagePartBody = Field(default_factory=MessagePartBody)
+    parts: List["MessagePart"] = Field(default_factory=lambda: [])
 
     @property
     def subject(self) -> str:
@@ -63,7 +67,7 @@ class MessagePart:
                 header.value = subject
                 return
 
-        self.headers.append(Header("Subject", subject))
+        self.headers.append(Header(name="Subject", value=subject))
 
     @property
     def sender(self) -> str:
@@ -107,21 +111,25 @@ class MessagePart:
         return None
 
 
-@dataclasses.dataclass
-class MessageId:
+class MessageId(BaseModel):
     """The IDs (message, thread) of a GMail message."""
+
+    model_config = ConfigDict(extra='ignore')
 
     id: str
     threadId: str | None = None
 
 
-@dataclasses.dataclass
-class Message:
+class Message(BaseModel):
     """Represents one email message."""
+
+    model_config = ConfigDict(
+        from_attributes=True, extra='ignore', arbitrary_types_allowed=True
+    )
 
     id: str | None = None
     threadId: str | None = None
-    labelIds: list[str] = dataclasses.field(default_factory=lambda: [])
+    labelIds: List[str] = Field(default_factory=list)
     snippet: str | None = None
     historyId: str | None = None
     internalDate: str | None = None
@@ -129,9 +137,7 @@ class Message:
     sizeEstimate: int | None = None
     raw: str | None = None
 
-    def __post_init__(self):
-        """Post-initialization to set up private attributes."""
-        self._parsed_msg: message.Message | None = None
+    _parsed_msg: Optional[message.EmailMessage] = PrivateAttr(default=None)
 
     @property
     def parsed_msg(self) -> message.EmailMessage:
@@ -143,7 +149,9 @@ class Message:
             self._parsed_msg = parser.BytesParser(
                 policy=policy.default
             ).parsebytes(decoded_msg)
-        if not isinstance(self._parsed_msg, message.EmailMessage):
+        if not isinstance(
+            self._parsed_msg, message.EmailMessage
+        ):  # pyright: ignore
             raise TypeError(
                 f"Expected EmailMessage, got {type(self._parsed_msg)}"
             )
@@ -197,6 +205,15 @@ class Message:
         if match:
             return match.group(1)
         return value
+
+
+class MessageDb:
+    """SQLAlchemy mapped class for GMail message."""
+
+    def __init__(self, **kwargs: Any) -> None:
+        """Initialize attributes from kwargs."""
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
     @classmethod
     def _register_entity(cls, registry: sqlalchemy.orm.registry):

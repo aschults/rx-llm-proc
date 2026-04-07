@@ -3,7 +3,6 @@
 import logging
 
 from googleapiclient import discovery
-import dacite
 
 from rxllmproc.sheets import types as sheets_types
 from rxllmproc.core import auth
@@ -53,9 +52,4 @@ class SheetsWrapper(api_base.ApiBase):
             )
             .execute()
         )
-        config = dacite.Config(strict=False)
-        spreadsheet = dacite.from_dict(
-            sheets_types.Spreadsheet, result_dict, config=config
-        )
-
-        return spreadsheet
+        return sheets_types.Spreadsheet.model_validate(result_dict)

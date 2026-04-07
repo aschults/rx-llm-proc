@@ -2,7 +2,6 @@
 """Test the Google Tasks API wrapper."""
 
 import unittest
-import dataclasses
 from typing import Any, cast
 from unittest import mock
 
@@ -46,9 +45,9 @@ def _build_tasklists_result(*list_ids: str) -> Any:
     tasklists = [
         tasks_types.TaskList(id=list_id, title='blah') for list_id in list_ids
     ]
-    return dataclasses.asdict(
-        _tasks_interface.TaskListResponse('kind', 'blah', tasklists)
-    )
+    return _tasks_interface.TaskListResponse(
+        kind='kind', etag='blah', items=tasklists
+    ).model_dump(mode='json')
 
 
 class TestWrapper(unittest.TestCase):
@@ -299,17 +298,10 @@ class TestWrapper(unittest.TestCase):
                 'title': 'blah',
                 'kind': 'tasks#task',
                 'position': '22',
-                'updated': '2024-01-01T00:00:00+00:00',
-                'id': None,
-                'etag': None,
-                'selfLink': None,
+                'updated': '2024-01-01T00:00:00Z',
                 'links': [],
-                'notes': None,
-                'parent': None,
-                'completed': '2024-01-01T00:00:00+00:00',
-                'deleted': None,
-                'hidden': None,
-                'due': '2024-01-01T00:00:00+00:00',
+                'completed': '2024-01-01T00:00:00Z',
+                'due': '2024-01-01T00:00:00Z',
             },
             tasklist='listid',
         )

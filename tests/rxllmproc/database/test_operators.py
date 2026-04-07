@@ -2,18 +2,20 @@
 # pyright: reportUnknownLambdaType=false
 """Test the SQL reactive operators."""
 
-import dataclasses
 import unittest
+import dataclasses
 from unittest import mock
-from typing import Any
+from typing import Any, Optional
 
 import sqlalchemy
 import sqlalchemy.orm
+import sqlalchemy.sql
 import reactivex as rx
 from reactivex import operators as ops
 
 from rxllmproc.database import operators as sql_operators
 from rxllmproc.database import api as database
+import test_support
 
 
 class TestSqlOperators(unittest.TestCase):
@@ -203,9 +205,7 @@ class TestSqlOperators(unittest.TestCase):
     def test_query_op_static(self):
         """Test query_op with static query."""
         transaction = sql_operators.ByPipelineTransaction(self.db_mock)
-        query_obj = mock.NonCallableMock(
-            spec=sqlalchemy.sql.expression.Executable
-        )
+        query_obj = mock.NonCallableMock(spec=sqlalchemy.sql.Executable)
         self.session_mock.execute.return_value.scalars.return_value.all.return_value = [
             "result1",
             "result2",
@@ -224,10 +224,10 @@ class TestSqlOperators(unittest.TestCase):
         """Test query_op with dynamic query factory."""
         transaction = sql_operators.ByPipelineTransaction(self.db_mock)
 
-        def _query_factory(item: Any) -> sqlalchemy.Executable:
+        def _query_factory(item: Any) -> sqlalchemy.sql.Executable:
             return f"query_for_{item}"  # type: ignore
 
-        def _side_effect(q: Any) -> sqlalchemy.Executable:
+        def _side_effect(q: Any) -> sqlalchemy.sql.Executable:
             m = mock.Mock()
             m.scalars.return_value.all.return_value = [f"result_{q}"]
             return m
@@ -269,7 +269,7 @@ class TestSqlOperators(unittest.TestCase):
         transaction = sql_operators.ByPipelineTransaction(self.db_mock)
         error = ValueError("creation error")
 
-        def _query_factory(item: Any) -> sqlalchemy.Executable:
+        def _query_factory(item: Any) -> sqlalchemy.sql.Executable:
             raise error
 
         query_operator = sql_operators.query_op(
@@ -306,19 +306,15 @@ class TestSqlOperators(unittest.TestCase):
 
     def test_integration_sqlite(self):
         """Test integration with an in-memory SQLite database."""
-        try:
-            import sqlalchemy as _  # noqa: F401
-        except ImportError:
-            self.skipTest("SQLAlchemy not installed")
 
-        @dataclasses.dataclass(kw_only=True)
+        @dataclasses.dataclass
         class User:
-            id: str
-            name: str
+            id: Optional[int] = None
+            name: str = ""
 
             @classmethod
             def _register_entity(cls, registry: sqlalchemy.orm.registry):
-                user_table = sqlalchemy.Table(
+                table = sqlalchemy.Table(
                     "user",
                     registry.metadata,
                     sqlalchemy.Column(
@@ -326,7 +322,7 @@ class TestSqlOperators(unittest.TestCase):
                     ),
                     sqlalchemy.Column("name", sqlalchemy.String),
                 )
-                registry.map_imperatively(User, user_table)
+                registry.map_imperatively(cls, table)
 
         db = sql_operators.RxDatabase(
             "sqlite:///:memory:",
@@ -338,7 +334,7 @@ class TestSqlOperators(unittest.TestCase):
         inserter = tx.insert_sink(User)
 
         rx.from_iterable(['Frank', 'Bob']).pipe(
-            ops.map_indexed(lambda name_, ix: User(id=str(ix), name=name_))
+            ops.map(lambda name_: User(name=name_))
         ).subscribe(inserter)
 
         users = db.session.query(User).all()
@@ -346,23 +342,21 @@ class TestSqlOperators(unittest.TestCase):
 
     def test_integration_sqlite_pipeline_ops(self):
         """Test integration with SQLite using insert_op and query_op."""
-        try:
-            from sqlalchemy import Column, Integer, String, select
-        except ImportError:
-            self.skipTest("SQLAlchemy not installed")
 
-        @dataclasses.dataclass(kw_only=True)
+        @dataclasses.dataclass
         class UserOp:
-            id: int
-            name: str
+            id: int = 0
+            name: str = ""
 
             @classmethod
             def _register_entity(cls, registry: sqlalchemy.orm.registry):
                 table = sqlalchemy.Table(
                     "user_op",
                     registry.metadata,
-                    Column("id", Integer, primary_key=True),
-                    Column("name", String),
+                    sqlalchemy.Column(
+                        "id", sqlalchemy.Integer, primary_key=True
+                    ),
+                    sqlalchemy.Column("name", sqlalchemy.String),
                 )
                 registry.map_imperatively(cls, table)
 
@@ -394,8 +388,10 @@ class TestSqlOperators(unittest.TestCase):
         query_results: list[Any] = []
 
         # Query for Bob
-        def _query(name: str) -> sqlalchemy.Executable:
-            return select(UserOp).where(database.t(UserOp).c.name == name)
+        def _query(name: str) -> sqlalchemy.sql.Executable:
+            return sqlalchemy.select(UserOp).where(
+                database.t(UserOp).c.name == name
+            )
 
         rx.of("Bob").pipe(
             tx_query.query_op(_query, UserOp),
@@ -418,6 +414,6 @@ class TestSqlOperators(unittest.TestCase):
         stored_bob = (
             session.query(UserOp).filter(database.t(UserOp).c.id == 2).one()
         )
-        self.assertEqual(stored_bob.name, "Bobby")
+        self.assertEqual(test_support.fail_none(stored_bob).name, "Bobby")
         self.assertEqual(len(upsert_results), 1)
         self.assertEqual(upsert_results[0].name, "Bobby")

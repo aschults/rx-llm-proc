@@ -1,35 +1,39 @@
 """Dataclasses for Google Docs API requests."""
 
-import dataclasses
 from typing import Any, Dict, List, Optional
+from pydantic import BaseModel, ConfigDict
 
 
-@dataclasses.dataclass
-class Location:
+class Location(BaseModel):
     """A location in a document."""
+
+    model_config = ConfigDict(extra='ignore')
 
     index: int
 
 
-@dataclasses.dataclass
-class Dimension:
+class Dimension(BaseModel):
     """A magnitude in a single direction in the specified units."""
+
+    model_config = ConfigDict(extra='ignore')
 
     magnitude: float = 0.0
     unit: str = "pt"
 
 
-@dataclasses.dataclass
-class InsertTextRequest:
+class InsertTextRequest(BaseModel):
     """Inserts text into a document."""
+
+    model_config = ConfigDict(extra='ignore')
 
     text: str
     location: Location
 
 
-@dataclasses.dataclass
-class RgbColor:
+class RgbColor(BaseModel):
     """An RGB color."""
+
+    model_config = ConfigDict(extra='ignore')
 
     # Set optional since REST call returns RgbColor with no fields.
     red: Optional[float] = None
@@ -37,39 +41,44 @@ class RgbColor:
     blue: Optional[float] = None
 
 
-@dataclasses.dataclass
-class Color:
+class Color(BaseModel):
     """A color."""
+
+    model_config = ConfigDict(extra='ignore')
 
     rgbColor: RgbColor
 
 
-@dataclasses.dataclass
-class ForegroundColor:
+class ForegroundColor(BaseModel):
     """The foreground color of a text style."""
+
+    model_config = ConfigDict(extra='ignore')
 
     color: Color
 
 
-@dataclasses.dataclass
-class WeightedFontFamily:
+class WeightedFontFamily(BaseModel):
     """A weighted font family."""
+
+    model_config = ConfigDict(extra='ignore')
 
     fontFamily: str | None = None
     weight: int | None = None
 
 
-@dataclasses.dataclass
-class Link:
+class Link(BaseModel):
     """A link."""
+
+    model_config = ConfigDict(extra='ignore')
 
     url: str | None = None
     headingId: str | None = None
 
 
-@dataclasses.dataclass
-class TextStyle:
+class TextStyle(BaseModel):
     """A text style."""
+
+    model_config = ConfigDict(extra='ignore')
 
     bold: Optional[bool] = None
     italic: Optional[bool] = None
@@ -79,26 +88,29 @@ class TextStyle:
     link: Optional[Link] = None
 
 
-@dataclasses.dataclass
-class Range:
+class Range(BaseModel):
     """A range of text in a document."""
+
+    model_config = ConfigDict(extra='ignore')
 
     startIndex: int
     endIndex: int
 
 
-@dataclasses.dataclass
-class UpdateTextStyleRequest:
+class UpdateTextStyleRequest(BaseModel):
     """Updates the text style of a range of text."""
+
+    model_config = ConfigDict(extra='ignore')
 
     range: Range
     textStyle: TextStyle
     fields: str
 
 
-@dataclasses.dataclass
-class ParagraphStyle:
+class ParagraphStyle(BaseModel):
     """A paragraph style."""
+
+    model_config = ConfigDict(extra='ignore')
 
     namedStyleType: str
     indentStart: Optional[Dimension] = None
@@ -106,40 +118,45 @@ class ParagraphStyle:
     headingId: Optional[str] = None
 
 
-@dataclasses.dataclass
-class UpdateParagraphStyleRequest:
+class UpdateParagraphStyleRequest(BaseModel):
     """Updates the paragraph style of a range of text."""
+
+    model_config = ConfigDict(extra='ignore')
 
     range: Range
     paragraphStyle: ParagraphStyle
     fields: str
 
 
-@dataclasses.dataclass
-class DeleteParagraphBulletsRequest:
+class DeleteParagraphBulletsRequest(BaseModel):
     """Deletes bullets from a range of text."""
+
+    model_config = ConfigDict(extra='ignore')
 
     range: Range
 
 
-@dataclasses.dataclass
-class CreateParagraphBulletsRequest:
+class CreateParagraphBulletsRequest(BaseModel):
     """Creates bullets for a range of text."""
+
+    model_config = ConfigDict(extra='ignore')
 
     range: Range
     bulletPreset: str
 
 
-@dataclasses.dataclass
-class DeleteContentRangeRequest:
+class DeleteContentRangeRequest(BaseModel):
     """Deletes a range of content from a document."""
+
+    model_config = ConfigDict(extra='ignore')
 
     range: Range
 
 
-@dataclasses.dataclass
-class Request:
+class Request(BaseModel):
     """A single request in a batch update."""
+
+    model_config = ConfigDict(extra='ignore')
 
     insertText: Optional[InsertTextRequest] = None
     updateTextStyle: Optional[UpdateTextStyleRequest] = None
@@ -149,109 +166,123 @@ class Request:
     deleteContentRange: Optional[DeleteContentRangeRequest] = None
 
 
-@dataclasses.dataclass
-class SectionBreak:
+class SectionBreak(BaseModel):
     """A section break."""
+
+    model_config = ConfigDict(extra='ignore')
 
     sectionStyle: Optional[Any] = None
 
 
-@dataclasses.dataclass
-class TableCell:
+class TableCell(BaseModel):
     """A table cell."""
+
+    model_config = ConfigDict(extra='ignore')
 
     content: List["StructuralElement"]
     startIndex: int
     endIndex: int
 
 
-@dataclasses.dataclass
-class TableRow:
+class TableRow(BaseModel):
     """A table row."""
+
+    model_config = ConfigDict(extra='ignore')
 
     tableCells: List[TableCell]
     startIndex: int
     endIndex: int
 
 
-@dataclasses.dataclass
-class Table:
+class Table(BaseModel):
     """A table."""
+
+    model_config = ConfigDict(extra='ignore')
 
     tableRows: List[TableRow]
     columns: int
     rows: int
 
 
-@dataclasses.dataclass
-class TableOfContents:
+class TableOfContents(BaseModel):
     """A table of contents."""
+
+    model_config = ConfigDict(extra='ignore')
 
     content: List["StructuralElement"]
 
 
-@dataclasses.dataclass
-class AutoText:
+class AutoText(BaseModel):
     """Auto text."""
+
+    model_config = ConfigDict(extra='ignore')
 
     type: str
     textStyle: Optional["TextStyle"] = None
 
 
-@dataclasses.dataclass
-class PageBreak:
+class PageBreak(BaseModel):
     """A page break."""
 
+    model_config = ConfigDict(extra='ignore')
+
     textStyle: Optional["TextStyle"] = None
 
 
-@dataclasses.dataclass
-class ColumnBreak:
+class ColumnBreak(BaseModel):
     """A column break."""
 
+    model_config = ConfigDict(extra='ignore')
+
     textStyle: Optional["TextStyle"] = None
 
 
-@dataclasses.dataclass
-class FootnoteReference:
+class FootnoteReference(BaseModel):
     """A footnote reference."""
+
+    model_config = ConfigDict(extra='ignore')
 
     footnoteId: str
     footnoteNumber: Optional[str] = None
     textStyle: Optional["TextStyle"] = None
 
 
-@dataclasses.dataclass
-class HorizontalRule:
+class HorizontalRule(BaseModel):
     """A horizontal rule."""
+
+    model_config = ConfigDict(extra='ignore')
 
     textStyle: Optional["TextStyle"] = None
 
 
-@dataclasses.dataclass
-class Equation:
+class Equation(BaseModel):
     """An equation."""
 
+    model_config = ConfigDict(extra='ignore')
 
-@dataclasses.dataclass
-class Person:
+
+class Person(BaseModel):
     """A person."""
+
+    model_config = ConfigDict(extra='ignore')
 
     personProperties: Optional[Any] = None
     textStyle: Optional["TextStyle"] = None
 
 
-@dataclasses.dataclass
-class RichLink:
+class RichLink(BaseModel):
     """A rich link."""
+
+    model_config = ConfigDict(extra='ignore')
 
     richLinkProperties: Optional[Any] = None
     textStyle: Optional["TextStyle"] = None
 
 
-@dataclasses.dataclass
-class DateElementProperties:
+class DateElementProperties(BaseModel):
     """Properties of a date element."""
+
+    model_config = ConfigDict(extra='ignore')
 
     timestamp: str
     locale: str
@@ -260,18 +291,20 @@ class DateElementProperties:
     displayText: str
 
 
-@dataclasses.dataclass
-class DateElement:
+class DateElement(BaseModel):
     """A date element."""
+
+    model_config = ConfigDict(extra='ignore')
 
     dateId: str
     textStyle: Optional["TextStyle"] = None
     dateElementProperties: Optional[DateElementProperties] = None
 
 
-@dataclasses.dataclass
-class ParagraphElement:
+class ParagraphElement(BaseModel):
     """A paragraph element."""
+
+    model_config = ConfigDict(extra='ignore')
 
     startIndex: int
     endIndex: int
@@ -287,19 +320,21 @@ class ParagraphElement:
     dateElement: Optional[DateElement] = None
 
 
-@dataclasses.dataclass
-class Paragraph:
+class Paragraph(BaseModel):
     """A paragraph."""
+
+    model_config = ConfigDict(extra='ignore')
 
     elements: List[ParagraphElement]
     paragraphStyle: Optional[ParagraphStyle] = None
 
 
-@dataclasses.dataclass
-class StructuralElement:
+class StructuralElement(BaseModel):
     """A structural element."""
 
-    def __post_init__(self):
+    model_config = ConfigDict(extra='ignore')
+
+    def model_post_init(self, __context: Any) -> None:
         """Post-initialization to set default startIndex."""
         if self.startIndex is None:
             self.startIndex = 1
@@ -312,24 +347,27 @@ class StructuralElement:
     tableOfContents: Optional[TableOfContents] = None
 
 
-@dataclasses.dataclass
-class Body:
+class Body(BaseModel):
     """The body of a document."""
+
+    model_config = ConfigDict(extra='ignore')
 
     content: List[StructuralElement]
 
 
-@dataclasses.dataclass
-class TextRun:
+class TextRun(BaseModel):
     """A text run."""
+
+    model_config = ConfigDict(extra='ignore')
 
     content: str
     textStyle: Optional[TextStyle] = None
 
 
-@dataclasses.dataclass
-class DocumentStyle:
+class DocumentStyle(BaseModel):
     """The style of a document."""
+
+    model_config = ConfigDict(extra='ignore')
 
     background: Optional[Any] = None
     defaultHeaderId: Optional[str] = None
@@ -351,24 +389,27 @@ class DocumentStyle:
     flipPageOrientation: Optional[bool] = None
 
 
-@dataclasses.dataclass
-class NamedStyle:
+class NamedStyle(BaseModel):
     """A named style."""
+
+    model_config = ConfigDict(extra='ignore')
 
     textStyle: Optional[TextStyle] = None
     paragraphStyle: Optional[ParagraphStyle] = None
 
 
-@dataclasses.dataclass
-class NamedStyles:
+class NamedStyles(BaseModel):
     """The named styles of a document."""
+
+    model_config = ConfigDict(extra='ignore')
 
     styles: List[NamedStyle]
 
 
-@dataclasses.dataclass
-class Document:
+class Document(BaseModel):
     """A Google Docs document."""
+
+    model_config = ConfigDict(from_attributes=True, extra='ignore')
 
     documentId: str
     title: Optional[str] = None

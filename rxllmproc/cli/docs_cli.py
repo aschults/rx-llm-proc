@@ -13,6 +13,7 @@ from rxllmproc.core.infra import utilities
 from rxllmproc.docs import section
 from rxllmproc.docs import llm_updater
 from rxllmproc.docs import operators as doc_ops
+from rxllmproc.llm import api as llm_api
 
 
 class DocsCli(cli_base.CommonFileOutputCli):
@@ -242,7 +243,7 @@ class DocsCli(cli_base.CommonFileOutputCli):
                     "Cannot use --section or --heading_id with --instructions."
                 )
 
-            llm = self.plugins.llm_registry.create(
+            llm = llm_api.create_model(
                 self.model, cache_instance=self.cache_instance
             )
             updater = llm_updater.DocUpdater(

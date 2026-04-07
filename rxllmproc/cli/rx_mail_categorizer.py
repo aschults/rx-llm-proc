@@ -16,13 +16,13 @@ from rxllmproc.gmail import types as gmail_types
 from rxllmproc.app.docs import types as docs_types
 
 _DB_CLASSES = [
-    gmail_types.Message,
-    mail_types.MailMetadata,
-    analysis_types.ActionItem,
-    analysis_types.ActionItemPlacement,
-    analysis_types.Source,
-    mail_types.MailSource,
-    analysis_types.Analysis,
+    gmail_types.MessageDb,
+    mail_types.MailMetadataDb,
+    analysis_types.ActionItemDb,
+    analysis_types.ActionItemPlacementDb,
+    analysis_types.SourceDb,
+    mail_types.MailSourceDb,
+    analysis_types.AnalysisDb,
 ]
 
 
@@ -159,7 +159,7 @@ class RxMailCategorizerCli(cli_base.CliBase):
 
         self._collector.start()
 
-        env = app_environment.RxEnvironment(
+        env = app_environment.RxEnvironment(  # pytype: disable=wrong-arg-types
             {
                 'db': self.db,
                 'model_name': self.model,

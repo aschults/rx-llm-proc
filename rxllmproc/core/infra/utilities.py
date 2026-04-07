@@ -10,6 +10,8 @@ from reactivex import operators as ops
 import datetime
 import pathlib
 import inspect
+import enum
+import os
 
 from typing import (
     Any,
@@ -25,9 +27,11 @@ from typing import (
     Generic,
     Union,
     TypedDict,
+    Optional,
 )
 import types
 import dataclasses
+import pydantic
 
 # Types that asdict() does not need to convert.
 _BASE_TYPES: Any = (int, float, complex, str, bytes, bool, bytearray, type)
@@ -69,6 +73,8 @@ def _asdict_special(value: Any) -> Any:
     """Convert special types."""
     if isinstance(value, AsDictConvertible):
         return asdict(value.asdict())
+    if isinstance(value, pydantic.BaseModel):
+        return value.model_dump(mode='json')
     if hasattr(value, 'model_dump'):
         return asdict(value.model_dump())
     if dataclasses.is_dataclass(value):
@@ -80,10 +86,14 @@ def _asdict_special(value: Any) -> Any:
             value = value.astimezone()
         utc_value = value.astimezone(datetime.timezone.utc)
         return utc_value.strftime('%Y-%m-%dT%H:%M:%SZ')
+    if isinstance(value, (datetime.date, datetime.time)):
+        return value.isoformat()
     if isinstance(value, message.Message):
         return repr(value.as_string())
-    if isinstance(value, pathlib.Path):
-        return str(value)
+    if isinstance(value, (pathlib.Path, os.PathLike)):
+        return str(cast(Any, value))
+    if isinstance(value, enum.Enum):
+        return value.value
     return NotImplemented
 
 
@@ -108,19 +118,37 @@ def asdict(value: Any) -> Any:
     if result is not NotImplemented:
         return result
 
-    raise ValueError(f'Cannot make {type(value)} ({value}) into a tuple')
+    raise ValueError(f'Cannot make {type(value)} ({value}) into a structure')
 
 
 # Default samples for base types.
 _BASE_TYPE_SAMPLES: dict[type[Any], Any] = {
     int: 123,
     float: 1.234,
-    str: 'string here',
+    str: 'some string',
     bytes: b'bytes here',
     bool: False,
     type: list[str],
 }
-# complex, bytearray missing
+
+
+def _get_sample_from_prop(prop: dict[str, Any]) -> Any:
+    """Helper to get a sample value from a JSON schema property."""
+    ptype = prop.get('type')
+    if ptype == 'string':
+        return 'some string'
+    if ptype == 'integer':
+        return 123
+    if ptype == 'number':
+        return 12.3
+    if ptype == 'boolean':
+        return True
+    if ptype == 'array':
+        items = prop.get('items', {})
+        return [_get_sample_from_prop(items)]
+    if ptype == 'object':
+        return {'key': 'value'}
+    return None
 
 
 def _build_sample_origin_types(cls: type[object]) -> Any:
@@ -144,31 +172,30 @@ def _build_sample_origin_types(cls: type[object]) -> Any:
             raise Exception('only accepting strings and ints as keys')
 
         return {sample_key: build_sample(args[1])}
-    if origin is types.UnionType:
+    if origin is types.UnionType or origin is Union:
         for arg in args:
-            if arg is None:
+            if arg is None or arg is type(None):
                 continue
             return build_sample(arg)
         raise ValueError('No type found to produce sample')
+    return None
 
 
-def build_sample(cls: type[object], sample_value: Any = None) -> Any:
-    """Build a sample dict structure.
+def build_sample(cls: type[Any], sample_hint: Optional[Any] = None) -> Any:
+    """Build a sample instance of a class.
 
     Args:
-        cls: Type to create a sample for.
-        sample_value: Optional sample value to use.
+        cls: The class to build a sample for.
+        sample_hint: Optional hint for the sample value.
 
-    Raises:
-        ValueError: If the sample for cls cannot be built.
+    Returns:
+        A sample instance or a dictionary.
     """
-    if sample_value is not None:
-        return asdict(sample_value)
+    if sample_hint is not None:
+        return asdict(sample_hint)
+
     if cls in _BASE_TYPE_SAMPLES:
-        if sample_value is not None:
-            return sample_value
-        else:
-            return _BASE_TYPE_SAMPLES[cls]
+        return _BASE_TYPE_SAMPLES[cls]
 
     if dataclasses.is_dataclass(cls):
         return {
@@ -176,6 +203,22 @@ def build_sample(cls: type[object], sample_value: Any = None) -> Any:
             for f in dataclasses.fields(cls)
             if not f.metadata.get('skip_sample', False)
         }
+
+    if hasattr(cls, 'model_json_schema'):
+        schema = getattr(cls, 'model_json_schema')()
+        properties = schema.get('properties', {})
+        sample: dict[str, Any] = {}
+        for name, prop in properties.items():
+            if 'default' in prop:
+                sample[name] = prop['default']
+            elif 'anyOf' in prop:
+                for choice in prop['anyOf']:
+                    if choice.get('type') != 'null':
+                        sample[name] = _get_sample_from_prop(choice)
+                        break
+            else:
+                sample[name] = _get_sample_from_prop(prop)
+        return sample
 
     return _build_sample_origin_types(cls)
 
@@ -192,7 +235,7 @@ class JsonSchema(TypedDict, total=False):
     required: list[str]
 
 
-_BASE_TYPE_SCHEMAS: dict[type[Any], JsonSchema] = {
+_BASE_TYPE_SCHEMAS: dict[type[Any], dict[str, Any]] = {
     int: {'type': 'integer'},
     float: {'type': 'number'},
     str: {'type': 'string'},
@@ -202,7 +245,7 @@ _BASE_TYPE_SCHEMAS: dict[type[Any], JsonSchema] = {
 }
 
 
-def _build_json_schema_union(args: tuple[Any, ...]) -> JsonSchema:
+def _build_json_schema_union(args: tuple[Any, ...]) -> dict[str, Any]:
     """Build a JSON schema for Union types."""
     # Filter out NoneType (Optional)
     non_none_args = [arg for arg in args if arg is not type(None)]
@@ -212,7 +255,7 @@ def _build_json_schema_union(args: tuple[Any, ...]) -> JsonSchema:
     return {'anyOf': [build_json_schema(arg) for arg in non_none_args]}
 
 
-def _build_json_schema_origin_types(cls: type[object]) -> JsonSchema:
+def _build_json_schema_origin_types(cls: type[object]) -> dict[str, Any]:
     """Build a JSON schema for parameterized types."""
     origin = get_origin(cls)
 
@@ -237,7 +280,7 @@ def _build_json_schema_origin_types(cls: type[object]) -> JsonSchema:
     return {}
 
 
-def build_json_schema(cls: type[object]) -> JsonSchema:
+def build_json_schema(cls: type[Any]) -> dict[str, Any]:
     """Build a JSON schema from a class structure.
 
     Args:
@@ -275,7 +318,7 @@ def build_json_schema(cls: type[object]) -> JsonSchema:
             ):
                 required.append(field.name)
 
-        schema: JsonSchema = {
+        schema: dict[str, Any] = {
             'type': 'object',
             'properties': properties,
         }
@@ -286,10 +329,13 @@ def build_json_schema(cls: type[object]) -> JsonSchema:
 
         if hasattr(cls, '_adapt_json_schema'):
             schema_adapter = cast(
-                Callable[[JsonSchema], JsonSchema], cls._adapt_json_schema  # type: ignore
+                Callable[[dict[str, Any]], dict[str, Any]], cls._adapt_json_schema  # type: ignore
             )
             schema = schema_adapter(schema)
         return schema
+
+    if hasattr(cls, 'model_json_schema'):
+        return getattr(cls, 'model_json_schema')()
 
     return _build_json_schema_origin_types(cls)
 
@@ -299,12 +345,7 @@ _V = TypeVar('_V')
 
 
 class OverlayDict(collections.UserDict[_T, _V]):
-    """Dict that allows overlay of key-values with another mapping.
-
-    The underlying `data` attribute from `UserDict` is used for the
-    base dict, the default values when no matching key is present in the
-    overlay data.
-    """
+    """Dict that allows overlay of key-values with another mapping."""
 
     def __init__(self, base: dict[_T, _V] | None = None, /, **kwargs: _V):
         """Create an instance."""
@@ -339,11 +380,7 @@ class OverlayDict(collections.UserDict[_T, _V]):
         self._overlay_data().__setitem__(key, item)
 
     def __delitem__(self, key: _T) -> None:
-        """Delete an item from the overlay.
-
-        Raises:
-            ValueError if key isn't found in the overlay.
-        """
+        """Delete an item from the overlay."""
         overlay = self._overlay_data()
         if key in overlay:
             overlay.__delitem__(key)
@@ -459,29 +496,7 @@ def with_backoff_retry(
     delay_factor: int = 2,
     delay_func: Callable[[float], None] = time.sleep,
 ) -> Callable[..., _T]:
-    """Wrap `func` to retry with increasing delays.
-
-    This decorator retries the decorated function `func` up to `num_retries`
-    times if it raises an exception of type `retry_exception_type`.
-    Each retry attempt is delayed by an exponentially increasing amount of time,
-    starting with `initial_delay` and multiplied by `delay_factor` for each
-    subsequent attempt.
-
-    Args:
-        func: The function to be wrapped and retried.
-        retry_exception_type: The type of exception that should trigger a retry.
-            Defaults to `Exception`.
-        num_retries: The maximum number of retry attempts. Defaults to 3.
-        initial_delay: The initial delay in seconds before the first retry.
-            Defaults to 10 seconds.
-        delay_factor: The factor by which the delay is multiplied for each
-            subsequent retry. Defaults to 2.
-        delay_func: A callable that accepts a delay in seconds as its argument
-            and performs the actual delay. Defaults to `time.sleep`.
-
-    Returns:
-        A wrapped version of the `func` that retries with backoff.
-    """
+    """Wrap `func` to retry with increasing delays."""
 
     def _func(*args: Any, **kwargs: Any) -> _T:
         delay = initial_delay
@@ -537,17 +552,7 @@ def log(
     stack_level: int = 1,
     mapper: Callable[[_T], list[Any]] | None = None,
 ) -> Callable[[rx.Observable[_T]], rx.Observable[_T]]:
-    """Log elements passing through.
-
-    Args:
-        format_string: String to format the log entry with.
-        level: Logging level to use.
-        logger: Logger instance or name to use. If None, the logger of the
-            calling module is used.
-        stack_level: How many stack frames to go up to find the caller's module.
-        mapper: Optional function to map the value before logging.
-            Defaults to repr(), wrapped in a list.
-    """
+    """Log elements passing through."""
     if logger is None:
         logger_name = 'root'
         try:

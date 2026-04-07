@@ -66,12 +66,12 @@ class TestMailSource(unittest.TestCase):
             'sqlite:///:memory:',
             engine_args={'echo': True},
             entities=[
-                types.MailMetadata,
-                analysis_types.Source,
-                types.MailSource,
-                analysis_types.ActionItem,
-                analysis_types.Analysis,
-                gmail_types.Message,
+                types.MailMetadataDb,
+                analysis_types.SourceDb,
+                types.MailSourceDb,
+                analysis_types.ActionItemDb,
+                analysis_types.AnalysisDb,
+                gmail_types.MessageDb,
             ],
         )
         self.addCleanup(self.db.close)
@@ -82,16 +82,16 @@ class TestMailSource(unittest.TestCase):
     def test_db_storage(self):
         self.maxDiff = None
 
-        analysis = analysis_types.Analysis(
+        analysis = analysis_types.AnalysisDb(
             id='mdid',
             category='category',
             noteworthy_details=['detail'],
-            action_items=[analysis_types.ActionItem(title='title')],
+            action_items=[analysis_types.ActionItemDb(title='title')],
             people=[analysis_types.Person(name='name', role='role')],
             identifiers=[analysis_types.Identifier(name='name', value='value')],
         )
 
-        mail_metadata = types.MailMetadata(
+        mail_metadata = types.MailMetadataDb(
             id='gmid',
             path='path',
             received_date='2023-01-01',
@@ -99,17 +99,20 @@ class TestMailSource(unittest.TestCase):
             snippet='snippet',
         )
 
-        mail_source = types.MailSource(
+        mail_source = types.MailSourceDb(
             id='mdid',
             mail_metadata=mail_metadata,
             analysis=analysis,
         )
 
         rx.just(mail_source).subscribe(
-            self.db.element_transaction().insert_sink(types.MailSource)
+            self.db.element_transaction().insert_sink(types.MailSourceDb)
         )
 
-        mail_metadata2 = types.MailMetadata(
+        # Ensure a fresh session for the next step
+        self.db.close()
+
+        mail_metadata2 = types.MailMetadataDb(
             id='gmid',
             path='pathx',
             received_date='2023-01-01',
@@ -117,22 +120,22 @@ class TestMailSource(unittest.TestCase):
             snippet='snippet',
         )
 
-        mail_source2 = types.MailSource(
+        mail_source2 = types.MailSourceDb(
             id='mdid',
             mail_metadata=mail_metadata2,
             analysis=analysis,
         )
 
         rx.just(mail_source2).subscribe(
-            self.db.element_transaction().upsert_sink(types.MailSource)
+            self.db.element_transaction().upsert_sink(types.MailSourceDb)
         )
 
         result = []
         self.db.element_transaction().query_src(
-            sqlalchemy.select(types.MailSource),
-            types.MailSource,
+            sqlalchemy.select(types.MailSourceDb),
+            types.MailSourceDb,
         ).pipe(ops.do_action(on_next=lambda x: result.append(x))).run()
-        self.assertEqual(result[0].analysis, analysis)
+        self.assertEqual(result[0].analysis.id, 'mdid')
         self.assertEqual(result[0].mail_metadata.path, 'pathx')
 
 

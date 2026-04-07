@@ -30,14 +30,14 @@ class Document:
         self.document_id = document_id
         self.ensure_alignment = ensure_alignment
         self._on_load = rx.Subject['DocumentContent']()
-        self._load_doc()
+        self.content = self._load_doc()
 
     @property
     def on_load(self) -> 'rx.Observable[DocumentContent]':
         """Returns an observable that fires when the document is loaded."""
         return self._on_load
 
-    def _load_doc(self) -> None:
+    def _load_doc(self) -> 'DocumentContent':
         """Loads the document and refreshes content."""
         self.model: docs_types.Document = self.wrapper.get(self.document_id)
         if not self.model.body:
@@ -46,6 +46,7 @@ class Document:
         if self.ensure_alignment:
             self.content.verify_alignment()
         self._on_load.on_next(self.content)
+        return self.content
 
     @property
     def url(self) -> str:

@@ -1,13 +1,14 @@
 """Types used with the Google Calendar REST interface."""
 
-import dataclasses
 from typing import Any, Protocol, Literal
+from pydantic import BaseModel, Field, ConfigDict
 from rxllmproc.calendar import types
 
 
-@dataclasses.dataclass
-class EventsList:
+class EventsList(BaseModel):
     """Response for events().list()."""
+
+    model_config = ConfigDict(extra='ignore')
 
     kind: str = "calendar#events"
     etag: str | None = None
@@ -16,12 +17,12 @@ class EventsList:
     updated: str | None = None
     timeZone: str | None = None
     accessRole: str | None = None
-    defaultReminders: list[types.EventReminder] = dataclasses.field(
+    defaultReminders: list[types.EventReminder] = Field(
         default_factory=lambda: []
     )
     nextPageToken: str | None = None
     nextSyncToken: str | None = None
-    items: list[types.Event] = dataclasses.field(default_factory=lambda: [])
+    items: list[types.Event] = Field(default_factory=lambda: [])
 
 
 class CalendarHttpRequestInterface(Protocol):

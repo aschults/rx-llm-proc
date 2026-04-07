@@ -1,7 +1,7 @@
 """Types used with the GMail REST interface."""
 
 from typing import Any, Protocol, Literal
-import dataclasses
+from pydantic import BaseModel, Field, ConfigDict
 
 from rxllmproc.gmail import types
 
@@ -71,18 +71,18 @@ class GmailInterface(Protocol):
         ...
 
 
-@dataclasses.dataclass
-class ListMessageResponse:
+class ListMessageResponse(BaseModel):
     """Response for messages().list()."""
 
-    messages: list[types.MessageId] = dataclasses.field(
-        default_factory=lambda: []
-    )
+    model_config = ConfigDict(extra='ignore')
+
+    messages: list[types.MessageId] = Field(default_factory=lambda: [])
     nextPageToken: str = ''
 
 
-@dataclasses.dataclass
-class Profile:
+class Profile(BaseModel):
     """User profile returned in users API part."""
+
+    model_config = ConfigDict(extra='ignore')
 
     emailAddress: str

@@ -30,6 +30,27 @@ def _mail_parser(s: str) -> message.Message:
     return parser.BytesParser(policy=policy.default).parsebytes(s.encode())
 
 
+def _is_pydantic_dataclass(obj: Any) -> bool:
+    """Check if an object is a Pydantic dataclass."""
+    return hasattr(obj, "__pydantic_fields__")
+
+
+def _get_fields(obj: Any) -> Iterable[Any]:
+    """Get fields from a dataclass or Pydantic dataclass."""
+    if dataclasses.is_dataclass(obj):
+        if _is_pydantic_dataclass(obj):
+            # For pydantic dataclasses, we can use __pydantic_fields__
+            # Each value is a FieldInfo object which has a 'metadata' attribute in V2
+            # But it's easier to use the standard dataclasses.fields if it works
+            try:
+                return dataclasses.fields(obj)
+            except Exception:
+                # Fallback for some environments/versions if needed
+                pass
+        return dataclasses.fields(obj)
+    return []
+
+
 class ArgPostProcessor:
     """Post-processes parsed arguments."""
 
@@ -142,14 +163,15 @@ class ArgPostProcessor:
         self, obj: Any, name: str, value: Any
     ) -> Any:
         """Get the value for a dataclass field, processing metadata if needed."""
-        for field in dataclasses.fields(obj):
-            match_name = field.metadata.get('flag_name', field.name)
+        for field in _get_fields(obj):
+            metadata = getattr(field, 'metadata', {})
+            match_name = metadata.get('flag_name', field.name)
             if match_name != name:
                 continue
-            if isinstance(value, str) and field.metadata.get('expand_file'):
+            if isinstance(value, str) and metadata.get('expand_file'):
                 return cast(Any, self.expand_arg(value))
-            elif isinstance(value, list) and field.metadata.get('expand_dict'):
-                func_name = field.metadata.get('expand_values')
+            elif isinstance(value, list) and metadata.get('expand_dict'):
+                func_name = metadata.get('expand_values')
                 func: Callable[[str], Any] = lambda s: s
                 if func_name == 'expand_args_typed':
                     func = self.expand_args_typed
@@ -169,14 +191,16 @@ class ArgPostProcessor:
             updated = False
             for obj in unique_targets:
                 target_name = name
-                if dataclasses.is_dataclass(obj):
-                    for field in dataclasses.fields(obj):
-                        if field.metadata.get('flag_name') == name:
+                is_dc = dataclasses.is_dataclass(obj)
+                if is_dc:
+                    for field in _get_fields(obj):
+                        metadata = getattr(field, 'metadata', {})
+                        if metadata.get('flag_name') == name:
                             target_name = field.name
                             break
                 if hasattr(obj, target_name):
                     final_value = value
-                    if dataclasses.is_dataclass(obj):
+                    if is_dc:
                         final_value = self._get_dataclass_field_value(
                             obj, name, value
                         )

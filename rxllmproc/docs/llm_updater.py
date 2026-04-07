@@ -7,12 +7,13 @@ from typing import Any, Callable
 
 import reactivex as rx
 from reactivex import operators as ops
+import pydantic_ai
 
 from rxllmproc.core.infra import utilities
 from rxllmproc.docs import docs_model
 from rxllmproc.docs import section
 from rxllmproc.docs import operators as doc_ops
-from rxllmproc.llm import commons as llm_commons
+from rxllmproc.llm import api as llm_api
 from rxllmproc.text_processing import jinja_processing
 
 _GENERIC_UPDATE_PROMPT = """
@@ -204,27 +205,31 @@ def _make_get_sections(document: docs_model.Document):
 
         return {'sections_desc': sections_desc}
 
-    return llm_commons.BasicLlmFunction(
+    return pydantic_ai.Tool(
+        _callback,
         name="get_sections",
         description=_GET_SECTIONS_DESCRIPTION,
-        callback=_callback,
-        with_texts={
-            "description": _GET_SECTION_PARAM_WITH_TEXT,
-            "type": "boolean",
-        },
     )
 
 
 def _make_get_doc_bounds(document: docs_model.Document):
 
-    def _callback() -> Any:
+    def _callback(*args: Any, **kwargs: Any) -> Any:
+        if args:
+            logging.warning(
+                'get_doc_bounds LLM function called with args %s', args
+            )
+        if kwargs:
+            logging.warning(
+                'get_doc_bounds LLM function called with kwargs %s', kwargs
+            )
         return {
             'start_index': document.get_start(),
             'end_index': document.get_end(),
         }
 
-    return llm_commons.BasicLlmFunction(
-        callback=_callback,
+    return pydantic_ai.Tool(
+        _callback,
         name="get_doc_bounds",
         description=_GET_SECTIONS_DESCRIPTION,
     )
@@ -237,7 +242,7 @@ class DocUpdater:
         self,
         document: docs_model.Document,
         edit_instructions: str,
-        llm: llm_commons.LlmBase | str | None = None,
+        llm: llm_api.LlmBase | str | None = None,
     ) -> None:
         """Initialize the generic updater.
 
@@ -252,12 +257,10 @@ class DocUpdater:
         self.template.add_global("edit_instructions", edit_instructions)
         self.template.add_global("document", document)
 
-        if isinstance(llm, llm_commons.LlmBase):
+        if isinstance(llm, llm_api.LlmBase):
             self.llm = llm
-        elif isinstance(llm, str):
-            self.llm = llm_commons.LlmModelFactory.shared_instance().create(llm)
         else:
-            self.llm = llm_commons.LlmModelFactory.shared_instance().create()
+            self.llm = llm_api.create_model(llm)
 
         self.llm.add_function(_make_get_sections(self.document))
         self.llm.add_function(_make_get_doc_bounds(self.document))
@@ -373,7 +376,7 @@ class ItemsEditGenerator:
         self,
         document: docs_model.Document,
         placement_instructions: str,
-        llm: llm_commons.LlmBase | str | None = None,
+        llm: llm_api.LlmBase | str | None = None,
     ) -> None:
         """Initialize the updater.
 
@@ -425,7 +428,7 @@ class ItemsEditGenerator:
 def generate_edits(
     document: docs_model.Document,
     instructions: str,
-    llm: llm_commons.LlmBase | str | None = None,
+    llm: llm_api.LlmBase | str | None = None,
     batch_size: int = 5,
 ) -> Callable[
     [rx.Observable[UpdateItem]], rx.Observable[doc_ops.EditOperation]

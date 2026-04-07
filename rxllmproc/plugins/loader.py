@@ -1,19 +1,17 @@
-"""Functionality to load addititional code as plugins.
+"""Functionality to load additional code as plugins.
 
 Default location for plugins: rxllmproc.plugins.
 """
 
-from typing import List, Any, Dict
+import argparse
 import pkgutil
 import types
-import argparse
-
-from rxllmproc.llm import commons as llm_commons
-
-# Load Gemini wrapper so the registry has the models.
-import rxllmproc.llm.api as _  # noqa: F401
+from typing import Any, Dict, List
 
 from rxllmproc.core import auth
+
+# Load LLM API.
+import rxllmproc.llm.api as _  # noqa: F401
 
 
 class _AlternateStorageAction(argparse.Action):
@@ -35,7 +33,7 @@ class _AlternateStorageAction(argparse.Action):
     def __init__(self, **kwargs: Any):
         """Create an instance, preventing the use of `nargs`."""
         if kwargs.get('nargs') is not None:
-            raise ValueError("nargs not allowed")
+            raise ValueError('nargs not allowed')
 
         super().__init__(**kwargs)
 
@@ -66,7 +64,7 @@ class _AlternateStorageAction(argparse.Action):
     ) -> type[argparse.Action]:
         """Create a subclass to store in a particular target."""
         return type(
-            "Anonymous",
+            'Anonymous',
             (_AlternateStorageAction,),
             {'target': target, 'target_name': target_name},
         )
@@ -92,24 +90,22 @@ class PluginRegistry:
 
     def __init__(
         self,
-        llm_registry: llm_commons.LlmModelFactory | None = None,
         cred_store: auth.CredentialsFactory | None = None,
         argparse_instance: argparse.ArgumentParser | None = None,
+        additional_modules: list[Any] | None = None,
     ) -> None:
         """Create an instance.
 
         Args:
-            llm_registry: Registry to load additional LLM factory functions.
             cred_store: Credentials store, to add additional credentials.
             argparse_instance: If set, allows plugins to add their own options.
+            additional_modules: If set, allows plugins to be loaded from additional
+              packages.
         """
         self.plugins: List[Any] = []
-        self._load_plugin_modules()
+        self._load_plugin_modules(*(additional_modules or []))
 
         self.context: Dict[str, Any] = dict()
-        self.llm_registry = (
-            llm_registry or llm_commons.LlmModelFactory.shared_instance()
-        )
         self.cred_store = (
             cred_store or auth.CredentialsFactory.shared_instance()
         )
@@ -118,10 +114,8 @@ class PluginRegistry:
     def _load_plugin_modules(self, *additional_bases: Any):
         """Find and load all plugin modules."""
         self.plugins = []
-        for base in PLUGIN_NAMESPACES_LIST:
-            for module_info in pkgutil.walk_packages(base.__path__):
-                if module_info.name == 'loader':
-                    continue
+        for base in PLUGIN_NAMESPACES_LIST + list(additional_bases):
+            for module_info in pkgutil.iter_modules(base.__path__):
                 module_spec = module_info.module_finder.find_spec(
                     module_info.name, None
                 )
@@ -131,8 +125,7 @@ class PluginRegistry:
                     )
                 if not module_spec.loader:
                     raise ModuleNotFoundError(
-                        'Plugin module loader not available'
-                        f' {repr(module_info.name)}'
+                        f'Plugin module loader not available {repr(module_info.name)}'
                     )
                 module = types.ModuleType(module_spec.name)
                 module_spec.loader.exec_module(module)

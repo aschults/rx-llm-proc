@@ -7,7 +7,6 @@ import base64
 
 from email import message
 from googleapiclient import discovery, errors
-import dacite
 
 from rxllmproc.gmail import types as gmail_types
 from rxllmproc.core import auth
@@ -27,7 +26,7 @@ class GMailWrap(api_base.ApiBase):
 
         Args:
             creds: Credentials to be used for the requests.
-            service: Optionally provide service instance (mainly for testing.)
+            service: Optionally provide service instance (mailnly for testing.)
                 Note: If provided, this instance is shared across threads and
                 is not thread-safe.
         """
@@ -35,7 +34,7 @@ class GMailWrap(api_base.ApiBase):
         self._service_arg = service
         self._local = threading.local()
         result_dict = self._service.users().getProfile(userId='me').execute()  # type: ignore
-        result = dacite.from_dict(_interface.Profile, result_dict)
+        result = _interface.Profile.model_validate(result_dict)
         email_address = result.emailAddress
         self.me = email_address
 
@@ -52,7 +51,7 @@ class GMailWrap(api_base.ApiBase):
             )
             .execute()
         )
-        return dacite.from_dict(gmail_types.Message, result_dict)
+        return gmail_types.Message.model_validate(result_dict)
 
     def generate_ids(
         self, q: str
@@ -74,13 +73,13 @@ class GMailWrap(api_base.ApiBase):
                     )
                     .execute()
                 )
-                list_result = dacite.from_dict(
-                    _interface.ListMessageResponse, list_result_dict
+                list_result = _interface.ListMessageResponse.model_validate(
+                    list_result_dict
                 )
                 for msg in list_result.messages:
                     if not msg.id:
                         raise ValueError('expecting message id to be set')
-                    yield msg
+                    yield gmail_types.MessageId.model_validate(msg)
 
                 page_token = list_result.nextPageToken
                 if not page_token:
@@ -90,7 +89,7 @@ class GMailWrap(api_base.ApiBase):
             logging.exception('failed to query mail %s', q)
             raise
 
-    def search(self, q: str) -> list[Any]:
+    def search(self, q: str) -> list[gmail_types.MessageId]:
         """Get message IDs for a query."""
         try:
             # Call the Gmail API
@@ -105,10 +104,13 @@ class GMailWrap(api_base.ApiBase):
                 )
                 .execute()
             )
-            list_result = dacite.from_dict(
-                _interface.ListMessageResponse, list_result_dict
+            list_result = _interface.ListMessageResponse.model_validate(
+                list_result_dict
             )
-            return list_result.messages
+            return [
+                gmail_types.MessageId.model_validate(msg)
+                for msg in list_result.messages
+            ]
 
         except errors.HttpError:
             logging.exception('failed to query mail %s', q)

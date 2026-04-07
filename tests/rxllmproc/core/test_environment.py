@@ -100,7 +100,7 @@ class TestEnvironment(unittest.TestCase):
             # Access gmail_wrapper
             wrapper = env.gmail_wrapper
             self.assertIsNotNone(wrapper)
-            # Access again, should be same instance
+            # Access again, should same instance
             self.assertIs(env.gmail_wrapper, wrapper)
 
             # Access tasks_wrapper
@@ -115,15 +115,13 @@ class TestEnvironment(unittest.TestCase):
 
         gmail_mock.assert_called_once()
 
-    @mock.patch(
-        'rxllmproc.core.environment.llm_commons.LlmModelFactory', spec=True
-    )
-    def test_create_model(self, llm_factory_mock: mock.MagicMock):
+    @mock.patch('rxllmproc.core.environment.llm_api.create_model')
+    def test_create_model(self, create_model_mock: mock.MagicMock):
         """Test creating an LLM model via environment."""
         env = environment.Environment({"model_name": "test-model"})
         with env:
             env.create_model(temperature=0.7)
-            llm_factory_mock.shared_instance.return_value.create.assert_called_with(
+            create_model_mock.assert_called_with(
                 "test-model",
                 cache_instance=mock.ANY,
                 functions=[],

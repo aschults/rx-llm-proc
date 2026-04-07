@@ -112,12 +112,12 @@ class TestBuildSample(unittest.TestCase):
     @parameterized.expand(
         [
             (int, 123),
-            (str, 'string here'),
+            (str, 'some string'),
             (list[int], [123]),
             (dict[int, int], {345: 123}),
             (
                 SampleClass1,
-                {'s': {'some key': {'a': 123, 'b': ['string here']}}},
+                {'s': {'some key': {'a': 123, 'b': ['some string']}}},
             ),
         ]
     )

@@ -3,7 +3,7 @@
 [] MQTT integration -- Easier interaction with IoT devices (Rx based)
 [] Sheets row by row incremental reader / writer (e.g. for logs)
 [] Chat integration
-[] Local / private LLM support (e.g. Hugging face, Ollama,...)
+[x] Local / private LLM support (e.g. Hugging face, Ollama,...)
 [x] Calendar integration.
 [] Drive updates, to track changes in docs/sheets,...
 
@@ -13,7 +13,7 @@
 [] Support using MCPs from LlmBase
 
 ## Structure
-[] Move to Pydantic AI
+[x] Move to Pydantic AI
 [x] MCP server CLI base -- Base class to facilitate Rx Based MCP servers
 [] Refactor utilities / Infrastructure into separate repo for reuse.
 

@@ -5,12 +5,10 @@ import logging
 import os
 import os.path
 import argparse
-import dataclasses
-
-import dacite
 
 from rxllmproc.cli import cli_base
 from rxllmproc.app.mail import index, categorizer, types
+from rxllmproc.llm import api as llm_api
 
 
 class MailCategorizerCli(cli_base.CliBase):
@@ -102,7 +100,7 @@ class MailCategorizerCli(cli_base.CliBase):
         self.refine_prompt: str | None = None
         self.parameter: list[str] = []
         self.batch_size: int = 20
-        self.model: str = "gemini-1.5-flash-latest"
+        self.model: str = "gemini-2.5-flash-lite"
         self.refine_categories: list[str] = []
         self.refine_model: str | None = None
         self.save_interval: int = 100
@@ -115,7 +113,7 @@ class MailCategorizerCli(cli_base.CliBase):
             with open(filepath, "r", encoding="utf-8") as f:
                 data_list = json.load(f)
                 return {
-                    item[key_field]: dacite.from_dict(types.MailSource, item)
+                    item[key_field]: types.MailSource.model_validate(item)
                     for item in data_list
                     if key_field in item
                 }
@@ -138,7 +136,7 @@ class MailCategorizerCli(cli_base.CliBase):
     ) -> None:
         """Converts a dictionary to a sorted list and saves it as a JSON file."""
         data_list = sorted(
-            [dataclasses.asdict(item) for item in data_dict.values()],
+            [item.model_dump(mode='json') for item in data_dict.values()],
             key=lambda x: tuple(x.get(key, "") for key in sort_keys),
         )
         try:
@@ -156,13 +154,12 @@ class MailCategorizerCli(cli_base.CliBase):
         )
 
         # 1. Initialize LLM Clients
-        llm_registry = self.plugins.llm_registry
-        model_instance = llm_registry.create(
+        model_instance = llm_api.create_model(
             self.model, cache_instance=self.cache_instance
         )
         refine_model_instance = model_instance
         if self.refine_model:
-            refine_model_instance = llm_registry.create(
+            refine_model_instance = llm_api.create_model(
                 self.refine_model, cache_instance=self.cache_instance
             )
             logging.info(

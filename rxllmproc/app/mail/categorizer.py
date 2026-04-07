@@ -1,12 +1,10 @@
 """Iterative mail categorizer service."""
 
-import dataclasses
 import json
 import logging
 from typing import Iterable, Callable, Any, cast
 
-import dacite
-from rxllmproc.llm import commons as llm_commons
+from rxllmproc.llm import api as llm_api
 from rxllmproc.text_processing import jinja_processing
 from rxllmproc.app.mail import types, index
 from rxllmproc.app.analysis import types as analysis_types
@@ -73,10 +71,10 @@ class MailCategorize:
     def __init__(
         self,
         prompt_template: str,
-        model: llm_commons.LlmBase,
+        model: llm_api.LlmBase,
         emails_dir: str,
         refine_prompt_template: str | None = None,
-        refine_model: llm_commons.LlmBase | None = None,
+        refine_model: llm_api.LlmBase | None = None,
         prompt_params: dict[str, str] | None = None,
         refine_categories: list[str] | None = None,
         batch_size: int = 20,
@@ -120,7 +118,7 @@ class MailCategorize:
     ) -> list[types.MailSource]:
         """Sends a batch of emails to the LLM for categorization."""
         emails_json_str = json.dumps(
-            [dataclasses.asdict(e) for e in email_batch], indent=2
+            [e.model_dump(mode='json') for e in email_batch], indent=2
         )
         prompt = self.jinja_template.render(email_batch=emails_json_str)
 
@@ -152,12 +150,13 @@ class MailCategorize:
             item_id = categorized_item.get("id")
             if item_id and item_id in email_map:
                 original_entry = email_map[item_id]
-                new_entry_dict = dataclasses.asdict(original_entry)
                 analysis = analysis_types.Analysis(
-                    category=categorized_item.get("category")
+                    id=item_id, category=categorized_item.get("category")
                 )
                 new_entry = types.MailSource(
-                    analysis=analysis, **new_entry_dict
+                    mail_metadata=original_entry,
+                    analysis=analysis,
+                    id=original_entry.id,
                 )
                 merged_emails.append(new_entry)
             else:
@@ -194,7 +193,7 @@ class MailCategorize:
 
         final_prompt_params = (self.prompt_params or {}) | {
             "email_content": email_content,
-            "email_item": json.dumps(dataclasses.asdict(email_item)),
+            "email_item": json.dumps(email_item.model_dump(mode='json')),
         }
 
         prompt = self.refined_jinja_template.render(**final_prompt_params)
@@ -226,12 +225,9 @@ class MailCategorize:
 
         analysis_data = refined_data_dict.copy()
         analysis_data.pop("id", None)
-        analysis = dacite.from_dict(
-            analysis_types.Analysis,
-            analysis_data,
-            config=dacite.Config(strict=False),
-        )
-        new_email_item = dataclasses.replace(email_item, analysis=analysis)
+        analysis = analysis_types.Analysis.model_validate(analysis_data)
+        new_email_item = email_item.model_copy(update={"analysis": analysis})
+
         return new_email_item
 
     def _categorize_in_batches(
@@ -266,7 +262,7 @@ class MailCategorize:
             for item in email_index
             if item.id not in categorized_email_index
         ]
-        pending_emails.sort(key=lambda x: (x.received_date, x.id))
+        pending_emails.sort(key=lambda x: (x.received_date or "", x.id))
 
         if not pending_emails:
             logging.info("No new emails to categorize. Exiting.")

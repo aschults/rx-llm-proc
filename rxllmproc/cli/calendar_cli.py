@@ -4,7 +4,6 @@ import json
 import sys
 import csv
 import io
-import dataclasses
 import datetime
 from typing import Any, Literal
 
@@ -176,7 +175,9 @@ class CalendarCli(cli_base.CommonFileOutputCli):
 
         if self.as_json:
             self.write_output(
-                json.dumps([dataclasses.asdict(e) for e in events], indent=2)
+                json.dumps(
+                    [e.model_dump(mode='json') for e in events], indent=2
+                )
             )
             return
 
@@ -213,13 +214,7 @@ class CalendarCli(cli_base.CommonFileOutputCli):
     def run_create(self):
         """Create an event."""
         event_dict = self._read_input()
-        # Basic conversion from dict to Event dataclass (nesting handled by CalendarWrap/dacite)
-        # However, for the CLI we might just pass the dict if we want to be flexible,
-        # but the wrapper expects an Event object.
-        # We'll use a simple way to create the Event object.
-        import dacite
-
-        event = dacite.from_dict(types.Event, event_dict)
+        event = types.Event.model_validate(event_dict)
 
         if self.dry_run:
             self._log_dry_run(f"Creating event: {event.summary}")
@@ -231,9 +226,7 @@ class CalendarCli(cli_base.CommonFileOutputCli):
     def run_update(self):
         """Update an event."""
         event_dict = self._read_input()
-        import dacite
-
-        event = dacite.from_dict(types.Event, event_dict)
+        event = types.Event.model_validate(event_dict)
 
         if not event.id:
             raise cli_base.UsageException(

@@ -4,7 +4,6 @@ import unittest
 from typing import Any, Dict
 
 from rxllmproc.sheets import types as sheets_types
-import dacite
 
 TEST_ROW1: Dict[str, Any] = {
     'values': [
@@ -94,7 +93,7 @@ class TestRowdata(unittest.TestCase):
 
     def setUp(self) -> None:
         """Set up providing a sample row."""
-        self.row = dacite.from_dict(sheets_types.RowData, TEST_ROW1)
+        self.row = sheets_types.RowData.model_validate(TEST_ROW1)
 
     def test_get_values(self):
         """Test converting values.
@@ -107,8 +106,8 @@ class TestRowdata(unittest.TestCase):
                 22,
                 'abc',
                 True,
-                sheets_types.Formula('=123'),
-                sheets_types.ErrorValue('', 'xxx'),
+                sheets_types.Formula(formula='=123'),
+                sheets_types.ErrorValue(type='', message='xxx'),
             ],
             self.row.getValues(),
         )
@@ -118,8 +117,7 @@ class TestRowdata(unittest.TestCase):
 
         This implicitly tests ExtendedValue.getMergedValue.
         """
-        row = dacite.from_dict(
-            sheets_types.RowData,
+        row = sheets_types.RowData.model_validate(
             {
                 'values': [
                     {
@@ -150,8 +148,8 @@ class TestRowdata(unittest.TestCase):
                 22,
                 'abc',
                 True,
-                sheets_types.Formula('=123'),
-                sheets_types.ErrorValue('', 'xxx'),
+                sheets_types.Formula(formula='=123'),
+                sheets_types.ErrorValue(type='', message='xxx'),
                 None,
             ],
             self.row.getValues(),
@@ -168,7 +166,7 @@ class TestDictConverter(unittest.TestCase):
 
     def setUp(self) -> None:
         """Set up providing a sample row."""
-        self.row = dacite.from_dict(sheets_types.RowData, TEST_ROW1)
+        self.row = sheets_types.RowData.model_validate(TEST_ROW1)
 
     def test_make_converter(self):
         """Test producing and using a dict converter."""
@@ -230,7 +228,7 @@ class TestGridData(unittest.TestCase):
             'startColumn': 0,
             'rowData': [TEST_ROW1, TEST_ROW2],
         }
-        self.grid = dacite.from_dict(sheets_types.GridData, grid_dict)
+        self.grid = sheets_types.GridData.model_validate(grid_dict)
 
     def test_normalze(self):
         """Check that normalization to the largest works."""
@@ -312,8 +310,8 @@ class TestGridData(unittest.TestCase):
         def _convert(row: sheets_types.RowData, rowNum: int):
             return (rowNum, row.getValues()[1])
 
-        self.grid.rowData.append(sheets_types.RowData([]))
-        self.grid.rowData.append(sheets_types.RowData([]))
+        self.grid.rowData.append(sheets_types.RowData(values=[]))
+        self.grid.rowData.append(sheets_types.RowData(values=[]))
 
         self.assertEqual(
             [(0, 22), (1, 23)], list(self.grid.iterateRows(_convert))
@@ -325,7 +323,7 @@ class TestGridData(unittest.TestCase):
         def _convert(row: sheets_types.RowData, rowNum: int):
             return (rowNum, row.getValues()[1])
 
-        self.grid.rowData.append(sheets_types.RowData([]))
+        self.grid.rowData.append(sheets_types.RowData(values=[]))
         self.grid.rowData.append(self.grid.rowData[0])
         self.grid.normalzeRows()
 
@@ -340,8 +338,8 @@ class TestGridData(unittest.TestCase):
         def _convert(row: sheets_types.RowData, rowNum: int):
             return (rowNum, row.getValues()[1])
 
-        self.grid.rowData.append(sheets_types.RowData([]))
-        self.grid.rowData.append(sheets_types.RowData([]))
+        self.grid.rowData.append(sheets_types.RowData(values=[]))
+        self.grid.rowData.append(sheets_types.RowData(values=[]))
         self.grid.rowData.append(self.grid.rowData[0])
         self.grid.normalzeRows()
 
@@ -356,8 +354,8 @@ class TestGridData(unittest.TestCase):
         def _convert(row: sheets_types.RowData, rowNum: int):
             return (rowNum, row.getValues()[1])
 
-        self.grid.rowData.append(sheets_types.RowData([]))
-        self.grid.rowData.append(sheets_types.RowData([]))
+        self.grid.rowData.append(sheets_types.RowData(values=[]))
+        self.grid.rowData.append(sheets_types.RowData(values=[]))
         self.grid.rowData.append(self.grid.rowData[0])
         self.grid.normalzeRows()
 
@@ -372,7 +370,7 @@ class TestGridData(unittest.TestCase):
         def _convert(row: sheets_types.RowData, rowNum: int):
             return (rowNum, row.getValues()[1])
 
-        self.grid.rowData.append(sheets_types.RowData([]))
+        self.grid.rowData.append(sheets_types.RowData(values=[]))
         self.grid.rowData.append(self.grid.rowData[0])
         self.grid.normalzeRows()
 
@@ -391,8 +389,8 @@ class TestGridData(unittest.TestCase):
         def _convert(row: sheets_types.RowData, rowNum: int):
             return (rowNum, row.getValues()[1])
 
-        self.grid.rowData.append(sheets_types.RowData([]))
-        self.grid.rowData.append(sheets_types.RowData([]))
+        self.grid.rowData.append(sheets_types.RowData(values=[]))
+        self.grid.rowData.append(sheets_types.RowData(values=[]))
         self.grid.rowData.append(self.grid.rowData[0])
         self.grid.normalzeRows()
 

@@ -1,28 +1,30 @@
 """Types used with the Takss REST interface."""
 
-import dataclasses
 from typing import Any, Protocol
+from pydantic import BaseModel, Field, ConfigDict
 
 from rxllmproc.tasks import types as tasks_types
 
 
-@dataclasses.dataclass
-class TaskResponse:
+class TaskResponse(BaseModel):
     """Repsonse listing all tasks of a tasklist."""
+
+    model_config = ConfigDict(extra='ignore')
 
     kind: str
     etag: str
-    items: list[tasks_types.Task]
+    items: list[tasks_types.Task] = Field(default_factory=lambda: [])
     nextPageToken: str | None = None
 
 
-@dataclasses.dataclass
-class TaskListResponse:
+class TaskListResponse(BaseModel):
     """Response listing all tasklists found."""
+
+    model_config = ConfigDict(extra='ignore')
 
     kind: str
     etag: str
-    items: list[tasks_types.TaskList]
+    items: list[tasks_types.TaskList] = Field(default_factory=lambda: [])
     nextPageToken: str | None = None
 
 

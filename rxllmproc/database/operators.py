@@ -10,6 +10,7 @@ from reactivex.abc import observer as abc_observer
 from reactivex import disposable
 import sqlalchemy
 import sqlalchemy.orm
+import sqlalchemy.sql
 from rxllmproc.database import api as database
 
 _T = TypeVar("_T", bound=object)
@@ -162,7 +163,7 @@ class QueryObservable(rx.Observable[_T], Generic[_T]):
     def __init__(
         self,
         transaction: 'BaseTransaction',
-        query: sqlalchemy.sql.expression.Executable,
+        query: sqlalchemy.sql.Executable,
     ) -> None:
         """Initialize the loader."""
         super().__init__(self._subscribe)
@@ -185,8 +186,7 @@ class QueryObservable(rx.Observable[_T], Generic[_T]):
 def query_op(
     transaction: "BaseTransaction",
     query: (
-        sqlalchemy.sql.expression.Executable
-        | Callable[[Any], sqlalchemy.sql.expression.Executable]
+        sqlalchemy.sql.Executable | Callable[[Any], sqlalchemy.sql.Executable]
     ),
     _: type[_T],
 ) -> Callable[[rx.Observable[Any]], rx.Observable[_T]]:

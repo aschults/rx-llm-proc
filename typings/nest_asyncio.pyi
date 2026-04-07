@@ -1,0 +1,3 @@
+from typing import Any, Optional
+
+def apply(loop: Optional[Any] = ...) -> None: ...

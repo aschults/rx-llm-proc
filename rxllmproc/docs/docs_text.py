@@ -1,10 +1,10 @@
 """Text rendering functions for Google Docs elements."""
 
-import dataclasses
 import json
 import logging
 from typing import Any
 from rxllmproc.docs import types as docs_types
+from rxllmproc.core.infra import utilities
 
 NON_CHAR = "\U0001ffff"
 TABLE_START = "\U0002ffff"
@@ -170,7 +170,7 @@ class AlignmentVerifier:
         end_index: int,
         e: VerifyError,
     ) -> None:
-        obj = json.dumps(dataclasses.asdict(element), indent=2)
+        obj = json.dumps(utilities.asdict(element), indent=2)
         name = type(element).__name__
         logging.error(
             "Alignment error for %s, indices %d, %d",

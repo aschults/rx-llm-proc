@@ -91,7 +91,7 @@ class TestCalendarWrapper(unittest.TestCase):
             creds=self.creds, service=self.service
         )
         attendee = calendar_types.EventAttendee(
-            email="test@example.com", is_self=True
+            email="test@example.com", self=True
         )
         event_to_create = calendar_types.Event(
             summary="New Event", attendees=[attendee]

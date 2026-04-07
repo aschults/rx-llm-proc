@@ -1,13 +1,14 @@
 # pyright: reportPrivateUsage=false
 """Tests for LLM updater."""
 
+from typing import Any, cast
 import unittest
 from unittest import mock
 import reactivex as rx
 from rxllmproc.docs import llm_updater
 from rxllmproc.docs import docs_model
 from rxllmproc.docs import operators as doc_ops
-from rxllmproc.llm import commons as llm_commons
+from rxllmproc.llm import api as llm_api
 
 
 class TestDocUpdater(unittest.TestCase):
@@ -20,7 +21,7 @@ class TestDocUpdater(unittest.TestCase):
         self.mock_doc.get_end.return_value = 100
 
         # Ensure the mock passes isinstance check
-        self.mock_llm = mock.Mock(spec=llm_commons.LlmBase)
+        self.mock_llm = mock.Mock(spec=llm_api.LlmBase)
         self.updater = llm_updater.DocUpdater(
             self.mock_doc, "instructions", self.mock_llm
         )
@@ -58,7 +59,7 @@ class TestDocUpdater(unittest.TestCase):
     def test_tools_implementation(self):
         """Test the implementation of the tools."""
         # Retrieve get_sections function
-        get_sections_func = llm_updater._make_get_sections(self.mock_doc)
+        get_sections_tool = llm_updater._make_get_sections(self.mock_doc)
 
         # Mock document content for get_sections
         mock_section = mock.Mock()
@@ -69,16 +70,16 @@ class TestDocUpdater(unittest.TestCase):
         mock_section.subsections = []
         self.mock_doc.content.sections = [mock_section]
 
-        result = get_sections_func()
+        result = get_sections_tool.function(cast(Any, None))
         expected = {"text_start": 10, "text_end": 20, "text": "Sec1"}
         self.assertEqual(result, {'sections_desc': [expected]})
 
         # Retrieve get_doc_bounds function
-        get_bounds_func = llm_updater._make_get_doc_bounds(self.mock_doc)
+        get_bounds_tool = llm_updater._make_get_doc_bounds(self.mock_doc)
         self.mock_doc.get_start.return_value = 1
         self.mock_doc.get_end.return_value = 100
 
-        result = get_bounds_func()
+        result = get_bounds_tool.function(cast(Any, None))
         self.assertEqual(result, {'start_index': 1, 'end_index': 100})
 
 
@@ -90,7 +91,7 @@ class TestItemsEditGenerator(unittest.TestCase):
         self.mock_doc.content = mock.Mock()
         self.mock_doc.content.sections = []
         self.mock_doc.get_end.return_value = 100
-        self.mock_llm = mock.Mock(spec=llm_commons.LlmBase)
+        self.mock_llm = mock.Mock(spec=llm_api.LlmBase)
         # Mock content for get_sections which is called in generate
         self.mock_doc.content.sections = []
         self.generator = llm_updater.ItemsEditGenerator(
@@ -156,7 +157,7 @@ class TestGenerateEditsOperator(unittest.TestCase):
         self.mock_doc.content = mock.Mock()
         self.mock_doc.content.sections = []
         self.mock_doc.get_end.return_value = 100
-        self.mock_llm = mock.Mock(spec=llm_commons.LlmBase)
+        self.mock_llm = mock.Mock(spec=llm_api.LlmBase)
 
     def test_operator(self):
         """Test the operator flow."""

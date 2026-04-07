@@ -1,7 +1,7 @@
 """Shared environment for reactive operators."""
 
 import logging
-from typing import Optional, List, Any, Callable, TypedDict, TypeVar
+from typing import Optional, Any, Callable, TypedDict, TypeVar
 
 import reactivex as rx
 from reactivex import operators as ops
@@ -9,7 +9,7 @@ from reactivex import operators as ops
 from rxllmproc.core import auth
 from rxllmproc.gmail import api as gmail_api
 from rxllmproc.calendar import api as calendar_api
-from rxllmproc.llm import commons as llm_commons
+from rxllmproc.llm import api as llm_api
 from rxllmproc.tasks import api as tasks_api
 from rxllmproc.docs import docs_model
 from rxllmproc.docs import api as docs_api
@@ -29,10 +29,9 @@ class EnvArgs(TypedDict, total=False):
     creds_factory: auth.CredentialsFactory | None
     creds: auth.Credentials | None
     cache_instance: cache.CacheInterface | None
-    llm_factory: llm_commons.LlmModelFactory
     llm_factory_args: dict[str, Any]
     model_name: str
-    functions: List[llm_commons.LlmFunction]
+    functions: llm_api.ToolList
     template_globals: dict[str, Any]
     template_filters: dict[str, Callable[..., Any]]
     collector: collector.Collector
@@ -84,7 +83,6 @@ class Environment:
         self._settings: EnvArgs = {
             'creds_factory': auth.CredentialsFactory.shared_instance(),
             'cache_instance': cache.NoCache(),
-            'llm_factory': llm_commons.LlmModelFactory.shared_instance(),
             'model_name': 'gemini',
             'functions': [],
             'template_globals': {},
@@ -124,7 +122,7 @@ class Environment:
     def add(
         self,
         llm_factory_args: Optional[dict[str, Any]] = None,
-        functions: Optional[List[llm_commons.LlmFunction]] = None,
+        functions: llm_api.ToolList | None = None,
         template_globals: Optional[dict[str, Any]] = None,
         template_filters: Optional[dict[str, Callable[..., Any]]] = None,
     ) -> 'Environment':
@@ -134,9 +132,17 @@ class Environment:
         ).copy()
         new_llm_factory_args.update(llm_factory_args or {})
 
-        new_functions = {func.name: func for func in self.functions or []}
+        new_functions = {
+            getattr(
+                func, 'name', getattr(func, '__name__', str(id(func)))
+            ): func
+            for func in self.functions or []
+        }
         for func in functions or []:
-            new_functions[func.name] = func
+            name = getattr(
+                func, 'name', getattr(func, '__name__', str(id(func)))
+            )
+            new_functions[name] = func
 
         new_template_globals = (
             self._settings.get('template_globals') or {}
@@ -172,14 +178,6 @@ class Environment:
         return factory
 
     @property
-    def llm_factory(self) -> llm_commons.LlmModelFactory:
-        """Get the LLM model factory."""
-        factory = self._settings.get('llm_factory')
-        if not factory:
-            raise ValueError("No LLM factory set")
-        return factory
-
-    @property
     def llm_factory_args(self) -> dict[str, Any]:
         """Get the LLM model factory arguments."""
         return self._settings.get('llm_factory_args') or {}
@@ -196,7 +194,7 @@ class Environment:
 
     def create_model(
         self, model_name: str | None = None, **kwargs: Any
-    ) -> llm_commons.LlmBase:
+    ) -> llm_api.LlmBase:
         """Create a new LLM model."""
         create_args = {
             'cache_instance': self.cache_instance,
@@ -205,10 +203,9 @@ class Environment:
         create_args.update(self.llm_factory_args)
         create_args.update(kwargs)
 
-        llm_factory = self.llm_factory
-        if not llm_factory:
-            raise ValueError("No LLM factory set")
-        return llm_factory.create(model_name or self.model_name, **create_args)
+        return llm_api.create_model(
+            model_name or self.model_name, **create_args
+        )
 
     @property
     def gmail_wrapper(self) -> gmail_api.GMailWrap:
@@ -264,12 +261,12 @@ class Environment:
         return self._settings.get('cache_instance') or cache.NoCache()
 
     @property
-    def functions(self) -> List[llm_commons.LlmFunction]:
+    def functions(self) -> llm_api.ToolList:
         """Get the LLM functions."""
         return self._settings.get('functions') or []
 
     @functions.setter
-    def functions(self, value: List[llm_commons.LlmFunction]):
+    def functions(self, value: llm_api.ToolList):
         self._settings['functions'] = value
 
     @property

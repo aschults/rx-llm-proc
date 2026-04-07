@@ -6,7 +6,6 @@ import json
 from typing import Any, Dict
 
 from pyfakefs import fake_filesystem_unittest
-import dacite
 
 from rxllmproc.sheets import api as sheets_wrapper
 from rxllmproc.sheets import types as sheets_types
@@ -90,7 +89,7 @@ class TestSheetsCli(fake_filesystem_unittest.TestCase):
         self.creds = mock.Mock()
         self.wrap = mock.Mock(sheets_wrapper.SheetsWrapper)
         self.instance = sheets_cli.SheetsCli(self.creds, self.wrap)
-        self.sheet = dacite.from_dict(sheets_types.Spreadsheet, SPREADSHEET)
+        self.sheet = sheets_types.Spreadsheet.model_validate(SPREADSHEET)
         self.wrap.get_sheet.return_value = self.sheet
 
     def test_get_sheet(self):
@@ -187,7 +186,7 @@ class TestSheetsCli(fake_filesystem_unittest.TestCase):
     def test_get_sheet_with_header(self):
         """Test reading from sheet with header row."""
         self.sheet.sheets[0].data[0].rowData.insert(
-            0, dacite.from_dict(sheets_types.RowData, HEADER_ROW)
+            0, sheets_types.RowData.model_validate(HEADER_ROW)
         )
         self.instance.main(
             ['get', '--id', 'theId', '--output=file.json', '--header_row', '0']

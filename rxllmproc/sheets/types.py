@@ -1,8 +1,6 @@
 """Types used for Google Sheets."""
 
-import dataclasses
 from typing import (
-    Literal,
     Callable,
     TypeVar,
     Iterator,
@@ -11,33 +9,27 @@ from typing import (
     Generic,
     TypedDict,
 )
+from pydantic import BaseModel, Field, ConfigDict
 
 _T = TypeVar('_T', bound=object)
 
 
-class Formula:
+class Formula(BaseModel):
     """Represents a Sheets formula."""
 
-    def __init__(self, formula: str) -> None:
-        """Create an instance."""
-        self.formula = formula
-
-    def __eq__(self, value: object) -> bool:
-        """Compare with other Formula."""
-        if isinstance(value, Formula):
-            return self.formula == value.formula
-        return False
+    formula: str
 
 
-@dataclasses.dataclass
-class ErrorValue:
+class ErrorValue(BaseModel):
     """Represents error value, as read from the API.
 
     See Also:
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/other#ErrorValue.
     """
 
-    type: Literal['']
+    model_config = ConfigDict(extra='ignore')
+
+    type: str = ""
     message: str
 
 
@@ -45,13 +37,14 @@ class ErrorValue:
 CellValueType = float | str | bool | ErrorValue | Formula | None
 
 
-@dataclasses.dataclass
-class ExtendedValue:
+class ExtendedValue(BaseModel):
     """Cell value, as read from the API.
 
     See Also:
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/other#ExtendedValue.
     """
+
+    model_config = ConfigDict(extra='ignore')
 
     numberValue: float | None = None
     stringValue: str | None = None
@@ -59,7 +52,7 @@ class ExtendedValue:
     formulaValue: str | None = None
     errorValue: ErrorValue | None = None
 
-    def _checkValid(self) -> CellValueType:
+    def _checkValid(self) -> None:
         """Check if the value is valid."""
         numSet = 0
         if self.numberValue is not None:
@@ -88,41 +81,44 @@ class ExtendedValue:
         if self.errorValue is not None:
             return self.errorValue
         if self.formulaValue is not None:
-            return Formula(self.formulaValue)
+            return Formula(formula=self.formulaValue)
         return None
 
 
-@dataclasses.dataclass
-class Color:
+class Color(BaseModel):
     """Representation of a color.
 
     See Also:
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/other#Color
     """
 
-    red: float
-    green: float
-    blue: float
+    model_config = ConfigDict(extra='ignore')
+
+    red: float = 0.0
+    green: float = 0.0
+    blue: float = 0.0
 
 
-@dataclasses.dataclass
-class Link:
+class Link(BaseModel):
     """Representation of Link in the API.
 
     See Also:
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/other#link
     """
 
+    model_config = ConfigDict(extra='ignore')
+
     uri: str
 
 
-@dataclasses.dataclass
-class TextFormat:
+class TextFormat(BaseModel):
     """Format of one run of the cell text.
 
     See Also:
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/other#TextFormat
     """
+
+    model_config = ConfigDict(extra='ignore')
 
     foregroundColor: Color | None = None
     fontFamily: str | None = None
@@ -134,45 +130,46 @@ class TextFormat:
     link: Link | None = None
 
 
-@dataclasses.dataclass
-class TextFormatRun:
+class TextFormatRun(BaseModel):
     """Text format for a fragment of the text.
 
     See Also:
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/cells#TextFormatRun
     """
 
+    model_config = ConfigDict(extra='ignore')
+
     format: TextFormat
     startIndex: int = 0
 
 
-@dataclasses.dataclass
-class CellData:
+class CellData(BaseModel):
     """Data for a single cell, as returned from the API.
 
     See Also:
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/cells#CellData.
     """
 
+    model_config = ConfigDict(extra='ignore')
+
     userEnteredValue: ExtendedValue | None = None
     effectiveValue: ExtendedValue | None = None
     formattedValue: str | None = None
     hyperlink: str | None = None
     note: str | None = None
-    textFormatRuns: list[TextFormatRun] = dataclasses.field(
-        default_factory=lambda: []
-    )
+    textFormatRuns: list[TextFormatRun] = Field(default_factory=lambda: [])
 
 
-@dataclasses.dataclass
-class RowData:
+class RowData(BaseModel):
     """Data for a row witin a GridData, as returned from the API.
 
     See Also:
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#RowData.
     """
 
-    values: list[CellData] = dataclasses.field(default_factory=lambda: [])
+    model_config = ConfigDict(extra='ignore')
+
+    values: list[CellData] = Field(default_factory=lambda: [])
 
     def normalzeRows(self, width: int):
         """Bring the cells in the row to the indicated number of columns.
@@ -215,73 +212,53 @@ def getEffectiveValueRow(
     return [valueConverter(value) for value in row.values]
 
 
-@dataclasses.dataclass
-class NamedRange:
-    """Named range in the sheet.
-
-    See Also:
-    https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets#NamedRange.
-    """
-
-    namedRangeId: str
-    name: str
-    range: 'GridRange'
-
-
-@dataclasses.dataclass
-class GridRange:
+class GridRange(BaseModel):
     """Range reference in a sheet.
 
     See Also:
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/other#GridRange.
     """
 
+    model_config = ConfigDict(extra='ignore')
+
     sheetId: int
     startRowIndex: int
+    endIndex: int = (
+        0  # Dummy to maintain API style if needed, but GridRange uses endRowIndex
+    )
     endRowIndex: int
     startColumnIndex: int
     endColumnIndex: int
 
 
-@dataclasses.dataclass
-class Sheet:
-    """Single sheet in a spreadsheet.
+class NamedRange(BaseModel):
+    """Named range in the sheet.
 
     See Also:
-    https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#Sheet.
+    https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets#NamedRange.
     """
 
-    data: 'list[GridData]'
+    model_config = ConfigDict(extra='ignore')
+
+    namedRangeId: str
+    name: str
+    range: GridRange
 
 
-@dataclasses.dataclass
-class Spreadsheet:
-    """Response for spreadsheets().get().
-
-    See Also:
-    https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets#Spreadsheet.
-    """
-
-    spreadsheetId: str
-    sheets: list[Sheet]
-    namedRanges: list[NamedRange] = dataclasses.field(
-        default_factory=lambda: []
-    )
-
-
-@dataclasses.dataclass
-class GridData:
+class GridData(BaseModel):
     """Grid cell data for a sheet or a section of a sheet.
 
     See Also:
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#GridData.
     """
 
-    rowData: list[RowData]
+    model_config = ConfigDict(extra='ignore')
+
+    rowData: list[RowData] = Field(default_factory=lambda: [])
     startRow: int = 0
     startColumn: int = 0
 
-    def __post_init__(self):
+    def model_post_init(self, __context: Any) -> None:
         """Post-Init by normalizing rows to the widest row."""
         self.normalzeRows()
 
@@ -294,6 +271,8 @@ class GridData:
             width: Width to trim/extend to. If omited, all rows are extended to
                 the largest row.
         """
+        if not self.rowData:
+            return
         if width is None:
             width = max(row.getLength() for row in self.rowData)
         for row in self.rowData:
@@ -321,6 +300,32 @@ class GridData:
             includeEmptyRows,
             firstRow,
         )
+
+
+class Sheet(BaseModel):
+    """Single sheet in a spreadsheet.
+
+    See Also:
+    https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#Sheet.
+    """
+
+    model_config = ConfigDict(extra='ignore')
+
+    data: list[GridData] = Field(default_factory=lambda: [])
+
+
+class Spreadsheet(BaseModel):
+    """Response for spreadsheets().get().
+
+    See Also:
+    https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets#Spreadsheet.
+    """
+
+    model_config = ConfigDict(extra='ignore')
+
+    spreadsheetId: str
+    sheets: list[Sheet] = Field(default_factory=lambda: [])
+    namedRanges: list[NamedRange] = Field(default_factory=lambda: [])
 
 
 # Converter function from Row to Dict.
@@ -463,6 +468,8 @@ class GridRowIterator(Generic[_T], Iterator[_T]):
                     row,
                     self.rowIndex + self.gridData.startRow - 1,
                 )
+            if self.rowIndex >= len(self.gridData.rowData):
+                raise StopIteration()
             row = self.gridData.rowData[self.rowIndex]
             self.rowIndex += 1
 

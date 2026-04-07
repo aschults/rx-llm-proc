@@ -1,34 +1,15 @@
 """Google Calendar REST interface wrapper."""
 
-import dataclasses
 import logging
 import threading
 from typing import Any
 
 from googleapiclient import discovery
-import dacite
 
 from rxllmproc.calendar import types
 from rxllmproc.calendar import _interface
 from rxllmproc.core import auth
 from rxllmproc.core import api_base
-from rxllmproc.core.infra import utilities
-
-
-def _map_attendees_for_api(body: dict[str, Any]) -> None:
-    """Map 'is_self' to 'self' for API requests."""
-    for att in body.get("attendees", []):
-        if "is_self" in att:
-            val = att.pop("is_self")
-            if val is not None:
-                att["self"] = val
-
-
-def _map_attendees_for_dataclass(data: dict[str, Any]) -> None:
-    """Map 'self' to 'is_self' for dataclass conversion."""
-    for att in data.get("attendees", []):
-        if "self" in att:
-            att["is_self"] = att.pop("self")
 
 
 class CalendarWrap(api_base.ApiBase):
@@ -110,9 +91,7 @@ class CalendarWrap(api_base.ApiBase):
         api_kwargs.update(kwargs)
 
         result_dict = self._service.events().list(**api_kwargs).execute()
-        for item in result_dict.get("items", []):
-            _map_attendees_for_dataclass(item)
-        result = dacite.from_dict(_interface.EventsList, result_dict)
+        result = _interface.EventsList.model_validate(result_dict)
         return result.items
 
     def create(
@@ -134,16 +113,14 @@ class CalendarWrap(api_base.ApiBase):
         logging.info(
             "Creating event in calendar %s: %s", calendar_id, event.summary
         )
-        body = utilities.remove_none_values(dataclasses.asdict(event))
-        _map_attendees_for_api(body)
+        body = event.model_dump(by_alias=True, exclude_none=True)
 
         result_dict = (
             self._service.events()
             .insert(calendarId=calendar_id, body=body, **kwargs)
             .execute()
         )
-        _map_attendees_for_dataclass(result_dict)
-        return dacite.from_dict(types.Event, result_dict)
+        return types.Event.model_validate(result_dict)
 
     def update(
         self,
@@ -168,8 +145,7 @@ class CalendarWrap(api_base.ApiBase):
             raise ValueError("Event must have an ID to be updated.")
 
         logging.info("Updating event %s in calendar %s", event.id, calendar_id)
-        body = utilities.remove_none_values(dataclasses.asdict(event))
-        _map_attendees_for_api(body)
+        body = event.model_dump(by_alias=True, exclude_none=True)
 
         result_dict = (
             self._service.events()
@@ -178,5 +154,4 @@ class CalendarWrap(api_base.ApiBase):
             )
             .execute()
         )
-        _map_attendees_for_dataclass(result_dict)
-        return dacite.from_dict(types.Event, result_dict)
+        return types.Event.model_validate(result_dict)

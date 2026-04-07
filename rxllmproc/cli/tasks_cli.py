@@ -277,7 +277,7 @@ class TasksCli(cli_base.CommonFileOutputCli):
         logging.info("Starting batch upsert for %s tasks.", len(task_data_list))
 
         for task_dict in task_data_list:
-            task = tasks_types.ManagedTask.from_dict(task_dict)
+            task = tasks_types.ManagedTask.model_validate(task_dict)
             if self.dry_run:
                 self._log_dry_run(f"Upserting managed task: {task.title}")
                 continue

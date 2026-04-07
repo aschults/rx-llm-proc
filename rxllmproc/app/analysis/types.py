@@ -1,7 +1,8 @@
 """Domain entities and types for analysis."""
 
-import dataclasses
 import datetime
+from typing import List, Optional, Any
+from pydantic import BaseModel, Field, ConfigDict
 
 import sqlalchemy
 import sqlalchemy.orm
@@ -10,86 +11,76 @@ from sqlalchemy.ext import orderinglist
 from rxllmproc.database import api as database
 
 
-@dataclasses.dataclass
-class Link:
+class Link(BaseModel):
     """Represent a link with a title and a URL."""
 
-    title: str = dataclasses.field(
-        metadata={"description": "Title of the link"}
-    )
-    url: str = dataclasses.field(metadata={"description": "URL of the link"})
+    model_config = ConfigDict(from_attributes=True, extra='ignore')
+
+    title: str = Field(description="Title of the link")
+    url: str = Field(description="URL of the link")
 
 
-@dataclasses.dataclass
-class Identifier:
+class Identifier(BaseModel):
     """Represent an identifier in an email or text."""
 
-    name: str = dataclasses.field(
-        metadata={"description": "Name of the identifier"}
-    )
-    value: str = dataclasses.field(
-        metadata={"description": "Value of the identifier"}
-    )
+    model_config = ConfigDict(from_attributes=True, extra='ignore')
+
+    name: str = Field(description="Name of the identifier")
+    value: str = Field(description="Value of the identifier")
 
 
-@dataclasses.dataclass
-class Person:
+class Person(BaseModel):
     """Represent a person in an email or text."""
 
-    name: str = dataclasses.field(
-        metadata={"description": "Name of the person"}
-    )
-    role: str = dataclasses.field(
-        metadata={
-            "description": "The role of the person in the text, e.g. recipient, sender, collaborator,..."
-        }
+    model_config = ConfigDict(from_attributes=True, extra='ignore')
+
+    name: str = Field(description="Name of the person")
+    role: str = Field(
+        description="The role of the person in the text, e.g. recipient, sender, collaborator,..."
     )
 
 
-@dataclasses.dataclass
-class ActionItem:
+class ActionItem(BaseModel):
     """Represent an action item in an email or text."""
 
-    analysis_id: str | None = dataclasses.field(
-        default=None, metadata={"description": "Analysis ID"}
+    model_config = ConfigDict(from_attributes=True, extra='ignore')
+
+    analysis_id: Optional[str] = Field(default=None, description="Analysis ID")
+    action_number: int = Field(
+        default=0, description="Sequence number of the action item"
     )
-    action_number: int = dataclasses.field(
-        default=0,
-        metadata={"description": "Sequence number of the action item"},
+    title: Optional[str] = Field(
+        default=None, description="one line title or summary of the action item"
     )
-    title: str | None = dataclasses.field(
+    notes: Optional[str] = Field(
+        default=None, description="Detailed notes for the action item"
+    )
+    priority: Optional[str] = Field(
         default=None,
-        metadata={
-            "description": "one line title or summary of the action item"
-        },
+        description="Priority of the action item (e.g., High, Medium, Low)",
     )
-    notes: str | None = dataclasses.field(
+    due_date: Optional[str] = Field(
         default=None,
-        metadata={"description": "Detailed notes for the action item"},
+        description="Due date for the action item in YYYY-MM-DD format",
     )
-    priority: str | None = dataclasses.field(
+    links: Optional[List[Link]] = Field(
         default=None,
-        metadata={
-            "description": "Priority of the action item (e.g., High, Medium, Low)"
-        },
-    )
-    due_date: str | None = dataclasses.field(
-        default=None,
-        metadata={
-            "description": "Due date for the action item in YYYY-MM-DD format"
-        },
-    )
-    links: list[Link] | None = dataclasses.field(
-        default=None,
-        metadata={
-            "description": "List of relevant links, each with 'title' and 'url'"
-        },
+        description="List of relevant links, each with 'title' and 'url'",
     )
 
     @property
     def source_url(self) -> str | None:
         """Get source URL from analysis ID."""
         return f'{self.analysis_id}#{self.action_number}'
+
+
+class ActionItemDb:
+    """Database mapped class for ActionItem."""
+
+    def __init__(self, **kwargs: Any) -> None:
+        """Initialize attributes from kwargs."""
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
     @classmethod
     def _register_entity(cls, registry: sqlalchemy.orm.registry):
@@ -108,36 +99,39 @@ class ActionItem:
             sqlalchemy.Column("notes", sqlalchemy.String),
             sqlalchemy.Column("priority", sqlalchemy.String),
             sqlalchemy.Column("due_date", sqlalchemy.String),
-            sqlalchemy.Column("links", database.DataclassJSONList(Link)),
+            sqlalchemy.Column("links", database.PydanticJSONList(Link)),
             sqlalchemy.Column("source_url", sqlalchemy.String),
             sqlalchemy.ForeignKeyConstraint(["analysis_id"], ["analysis.id"]),
         )
         registry.map_imperatively(cls, table)
 
 
-@dataclasses.dataclass
-class ActionItemPlacement:
+class ActionItemPlacement(BaseModel):
     """Tracks where an action item has been placed."""
 
-    analysis_id: str | None = dataclasses.field(
-        default=None, metadata={"description": "Analysis ID"}
+    model_config = ConfigDict(from_attributes=True, extra='ignore')
+
+    analysis_id: Optional[str] = Field(default=None, description="Analysis ID")
+    action_number: Optional[int] = Field(
+        default=None, description="Sequence number of the action item"
     )
-    action_number: int | None = dataclasses.field(
+    placement_container_url: Optional[str] = Field(
         default=None,
-        metadata={"description": "Sequence number of the action item"},
+        description="Reference to the container in the target system (e.g. Docs URL)",
     )
-    placement_container_url: str | None = dataclasses.field(
+    placement_id: Optional[str] = Field(
         default=None,
-        metadata={
-            "description": "Reference to the container in the target system (e.g. Docs URL)"
-        },
+        description="ID in the target system, i.e. how to find the item within the container",
     )
-    placement_id: str | None = dataclasses.field(
-        default=None,
-        metadata={
-            "description": "ID in the target system, i.e. how to find the item within the container"
-        },
-    )
+
+
+class ActionItemPlacementDb:
+    """Database mapped class for ActionItemPlacement."""
+
+    def __init__(self, **kwargs: Any) -> None:
+        """Initialize attributes from kwargs."""
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
     @classmethod
     def _register_entity(cls, registry: sqlalchemy.orm.registry):
@@ -164,43 +158,41 @@ class ActionItemPlacement:
         registry.map_imperatively(cls, table)
 
 
-@dataclasses.dataclass
-class Analysis:
+class Analysis(BaseModel):
     """Store all mail analysis results."""
 
-    id: str | None = dataclasses.field(
-        default=None, metadata={"description": "Content Source ID."}
-    )
-    category: str | None = dataclasses.field(
+    model_config = ConfigDict(from_attributes=True, extra='ignore')
+
+    id: Optional[str] = Field(default=None, description="Content Source ID.")
+    category: Optional[str] = Field(
         default=None,
-        metadata={
-            "description": "Category of the email, format: 'this_is_a_category'"
-        },
+        description="Category of the email, format: 'this_is_a_category'",
     )
-    noteworthy_details: list[str] = dataclasses.field(
+    noteworthy_details: List[str] = Field(
         default_factory=lambda: [],
-        metadata={
-            "description": "noteworthy details, bullet list style, one bullet per list item"
-        },
+        description="noteworthy details, bullet list style, one bullet per list item",
     )
-    action_items: list[ActionItem] = dataclasses.field(
+    action_items: List[ActionItem] = Field(
         default_factory=lambda: [],
-        metadata={
-            "description": "List of action items extracted from the email"
-        },
+        description="List of action items extracted from the email",
     )
-    people: list[Person] = dataclasses.field(
+    people: List[Person] = Field(
         default_factory=lambda: [],
-        metadata={
-            "description": "Key people mentioned in the email and their roles"
-        },
+        description="Key people mentioned in the email and their roles",
     )
-    identifiers: list[Identifier] = dataclasses.field(
+    identifiers: List[Identifier] = Field(
         default_factory=lambda: [],
-        metadata={
-            "description": "Key identifiers found in the email (e.g., ticket numbers, project codes, order numbers,...)"
-        },
+        description="Key identifiers found in the email (e.g., ticket numbers, project codes, order numbers,...)",
     )
+
+
+class AnalysisDb:
+    """Database mapped class for Analysis."""
+
+    def __init__(self, **kwargs: Any) -> None:
+        """Initialize attributes from kwargs."""
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
     @classmethod
     def _register_entity(cls, registry: sqlalchemy.orm.registry):
@@ -217,9 +209,9 @@ class Analysis:
             id_column,
             sqlalchemy.Column("category", sqlalchemy.String),
             sqlalchemy.Column("noteworthy_details", database.StringListJSON),
-            sqlalchemy.Column("people", database.DataclassJSONList(Person)),
+            sqlalchemy.Column("people", database.PydanticJSONList(Person)),
             sqlalchemy.Column(
-                "identifiers", database.DataclassJSONList(Identifier)
+                "identifiers", database.PydanticJSONList(Identifier)
             ),
         )
         registry.map_imperatively(
@@ -227,32 +219,40 @@ class Analysis:
             table,
             properties={
                 'action_items': sqlalchemy.orm.relationship(
-                    "ActionItem",
+                    ActionItemDb,
                     backref='analysis',
                     lazy="selectin",
-                    collection_class=orderinglist.ordering_list(
+                    collection_class=orderinglist.ordering_list(  # pyright: ignore
                         "action_number"
                     ),
-                    primaryjoin="foreign(ActionItem.analysis_id) == Analysis.id",
+                    primaryjoin="foreign(ActionItemDb.analysis_id) == AnalysisDb.id",
                 ),
             },
         )
 
 
-@dataclasses.dataclass(kw_only=True)
-class Source:
+class Source(BaseModel):
     """Base source data."""
 
-    id: str = dataclasses.field(
-        metadata={"description": "The unique ID (url) of the content source."}
-    )
-    created_time: datetime.datetime = dataclasses.field(
+    model_config = ConfigDict(from_attributes=True, extra='ignore')
+
+    id: str = Field(description="The unique ID (url) of the content source.")
+    created_time: datetime.datetime = Field(
         default_factory=lambda: datetime.datetime.now(datetime.timezone.utc),
-        metadata={"description": "Time of creation."},
+        description="Time of creation.",
     )
-    analysis: Analysis | None = dataclasses.field(
-        default=None, metadata={"description": "Analysis of the content"}
+    analysis: Optional[Analysis] = Field(
+        default=None, description="Analysis of the content"
     )
+
+
+class SourceDb:
+    """Database mapped class for Source."""
+
+    def __init__(self, **kwargs: Any) -> None:
+        """Initialize attributes from kwargs."""
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
     @classmethod
     def _register_entity(cls, registry: sqlalchemy.orm.registry):
@@ -270,7 +270,7 @@ class Source:
             polymorphic_identity="source",
             properties={
                 'analysis': sqlalchemy.orm.relationship(
-                    "Analysis",
+                    AnalysisDb,
                     uselist=False,
                     backref='source',
                     lazy="joined",

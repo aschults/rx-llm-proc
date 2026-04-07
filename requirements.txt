@@ -10,6 +10,10 @@ argparse-dataclass
 requests-mock
 SQLAlchemy
 mcp
+pydantic
+pydantic-ai
+nest_asyncio
+absl-py
 
 google_auth_oauthlib
 google-api-python-client
@@ -41,4 +45,4 @@ types-protobuf
 pyright
 flake8
 black
-git+https://github.com/google/pytype.git
+# git+https://github.com/google/pytype.git

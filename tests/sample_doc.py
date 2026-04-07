@@ -228,10 +228,10 @@ DOC_BODY = docs_types.Body(
                                             paragraphStyle=docs_types.ParagraphStyle(
                                                 namedStyleType="NORMAL_TEXT",
                                                 indentStart=docs_types.Dimension(
-                                                    0, "PT"
+                                                    magnitude=0, unit="PT"
                                                 ),
                                                 indentFirstLine=docs_types.Dimension(
-                                                    0, "PT"
+                                                    magnitude=0, unit="PT"
                                                 ),
                                             ),
                                         ),
@@ -259,10 +259,10 @@ DOC_BODY = docs_types.Body(
                                             paragraphStyle=docs_types.ParagraphStyle(
                                                 namedStyleType="NORMAL_TEXT",
                                                 indentStart=docs_types.Dimension(
-                                                    0, "PT"
+                                                    magnitude=0, unit="PT"
                                                 ),
                                                 indentFirstLine=docs_types.Dimension(
-                                                    0, "PT"
+                                                    magnitude=0, unit="PT"
                                                 ),
                                             ),
                                         ),

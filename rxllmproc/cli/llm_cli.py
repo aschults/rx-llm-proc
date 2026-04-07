@@ -2,7 +2,7 @@
 
 from os import path
 import os
-from typing import List, Set, Dict, Any, Tuple
+from typing import List, Set, Dict, Any, Tuple, Union, Callable
 import glob
 import json
 import requests
@@ -11,10 +11,12 @@ import sys
 import logging
 import re
 
+import pydantic_ai
+
 from rxllmproc.cli import cli_base
 from rxllmproc.core import auth
 
-from rxllmproc.llm import commons
+from rxllmproc.llm import api as llm_api
 from rxllmproc.text_processing import jinja_processing
 from rxllmproc.core.infra import containers
 
@@ -204,7 +206,6 @@ class LlmCli(cli_base.CommonFileOutputCli):
         super().__init__(creds)
 
         self.processor = jinja_processing.JinjaProcessing()
-        self.llm_registry = self.plugins.llm_registry
 
         self.context_files: List[str] | None = None
         self.writeable_files: List[str] | None = None
@@ -217,11 +218,15 @@ class LlmCli(cli_base.CommonFileOutputCli):
         self.upload: List[str] | None = None
         self.define: List[str] | None = None
 
-        current_time = commons.BasicLlmFunction(
-            'get_current_time', 'Gets the current local time.', self.get_time
+        current_time = pydantic_ai.Tool(
+            self.get_time,
+            name='get_current_time',
+            description='Gets the current local time.',
         )
 
-        self.functions: List[commons.LlmFunction] = [current_time]
+        self.functions: list[Union[pydantic_ai.Tool, Callable[..., Any]]] = [
+            current_time
+        ]
 
     def _include_file(self, filename: str) -> str:
         """Jinja function to include a file's content."""
@@ -229,42 +234,25 @@ class LlmCli(cli_base.CommonFileOutputCli):
 
     def _add_functions(self):
         """Add functions based on set options."""
-        file_func = commons.BasicLlmFunction(
-            'read_file',
-            ('Read the full content of the speficied file.'),
+        file_func = pydantic_ai.Tool(
             self.retreive_file,
-            filename={
-                'type': 'string',
-                'description': ('The filename of the file to read.'),
-            },
+            name='read_file',
+            description='Read the full content of the specified file.',
         )
-        file_write_func = commons.BasicLlmFunction(
-            'write_file',
-            ('Write the content of the speficied file.'),
+        file_write_func = pydantic_ai.Tool(
             self.write_file,
-            filename={
-                'type': 'string',
-                'description': ('The filename of the file to read.'),
-            },
-            content={
-                'type': 'string',
-                'description': 'The content of the file to be written.',
-            },
+            name='write_file',
+            description='Write the content of the specified file.',
         )
-        list_func = commons.BasicLlmFunction(
-            'list_files',
-            'List files by glob/unix style pattern.',
+        list_func = pydantic_ai.Tool(
             self.list_files,
-            pattern={
-                'type': 'string',
-                'description': 'glob-style pattern to match files.',
-            },
+            name='list_files',
+            description='List files by glob/unix style pattern.',
         )
-        get_url_func = commons.BasicLlmFunction(
-            'get_url',
-            'Gets the content of an external website or URL.',
+        get_url_func = pydantic_ai.Tool(
             self.retreive_url,
-            url={'type': 'string', 'description': 'The URL to fetch.'},
+            name='get_url',
+            description='Gets the content of an external website or URL.',
         )
 
         if self.context_files_expanded:
@@ -283,13 +271,13 @@ class LlmCli(cli_base.CommonFileOutputCli):
         """
         return []
 
-    def _build_model(self) -> commons.LlmBase:
+    def _build_model(self) -> llm_api.LlmBase:
         logging.info(
             'Creating LLM of type %s, functions: %s',
             self.model,
             repr(self.functions),
         )
-        return self.llm_registry.create(
+        return llm_api.create_model(
             self.model,
             functions=self.functions,
             api_key=self.api_key,
@@ -298,7 +286,7 @@ class LlmCli(cli_base.CommonFileOutputCli):
 
     def _exception_to_status(self, e: Exception) -> Tuple[int, str] | None:
         """Map Generator Errors to 30 exit value."""
-        if isinstance(e, commons.GeneratorError):
+        if isinstance(e, llm_api.GeneratorError):
             return 30, f'Could not generate result: {e}'
         return super()._exception_to_status(e)
 

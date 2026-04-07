@@ -92,7 +92,7 @@ class TestSection(unittest.TestCase):
                     docs_types.ParagraphElement(
                         startIndex=1,
                         endIndex=5,
-                        textRun=docs_types.TextRun("H1a\n"),
+                        textRun=docs_types.TextRun(content="H1a\n"),
                     )
                 ],
                 paragraphStyle=docs_types.ParagraphStyle(
@@ -108,7 +108,7 @@ class TestSection(unittest.TestCase):
                     docs_types.ParagraphElement(
                         startIndex=5,
                         endIndex=10,
-                        textRun=docs_types.TextRun("Text\n"),
+                        textRun=docs_types.TextRun(content="Text\n"),
                     )
                 ],
                 paragraphStyle=docs_types.ParagraphStyle(
