@@ -5,7 +5,7 @@ import json
 from email import message
 from pyfakefs import fake_filesystem_unittest
 
-from test_support import fail_none
+import test_support
 
 from rxllmproc.app.mail import index
 from rxllmproc.gmail import types as gmail_types
@@ -92,8 +92,10 @@ class TestGmailIndexManager(fake_filesystem_unittest.TestCase):
         manager.save_index()
 
         self.assertTrue(self.fs.exists("/test_dir/index.json"))
-        index_file = fail_none(self.fs.get_object("/test_dir/index.json"))
-        saved_data = json.loads(fail_none(index_file.contents))
+        index_file = test_support.fail_none(
+            self.fs.get_object("/test_dir/index.json")
+        )
+        saved_data = json.loads(test_support.fail_none(index_file.contents))
 
         self.assertEqual(len(saved_data), 1)
         self.assertEqual(saved_data[0]["id"], "msg1")
@@ -155,8 +157,10 @@ class TestGmailIndexManager(fake_filesystem_unittest.TestCase):
 
         manager.save_index()
 
-        index_file = fail_none(self.fs.get_object("/test_dir/index.json"))
-        saved_data = json.loads(fail_none(index_file.contents))
+        index_file = test_support.fail_none(
+            self.fs.get_object("/test_dir/index.json")
+        )
+        saved_data = json.loads(test_support.fail_none(index_file.contents))
 
         # Check if the saved data is sorted by received_date
         self.assertEqual(saved_data[0]["id"], "msg_a")

@@ -5,7 +5,7 @@ import logging
 from email import header
 from email import utils
 from typing import Any, Optional
-from pydantic import BaseModel, Field, ConfigDict
+import pydantic
 
 import sqlalchemy
 import sqlalchemy.orm
@@ -14,38 +14,42 @@ from rxllmproc.gmail import types as gmail_types
 from rxllmproc.app.analysis import types as analysis_types
 
 
-class MailMetadata(BaseModel):
+class MailMetadata(pydantic.BaseModel):
     """Represents a single entry in the email index."""
 
-    model_config = ConfigDict(
+    model_config = pydantic.ConfigDict(
         from_attributes=True, extra='ignore', arbitrary_types_allowed=True
     )
 
-    id: str = Field(description="The unique ID of the email message")
-    path: Optional[str] = Field(
+    id: str = pydantic.Field(description="The unique ID of the email message")
+    path: Optional[str] = pydantic.Field(
         default=None,
         description="File path to the stored email content",
     )
-    received_date: Optional[str] = Field(
+    received_date: Optional[str] = pydantic.Field(
         default=None,
         description="ISO formatted date when the email was received",
     )
-    subject: Optional[str] = Field(
+    subject: Optional[str] = pydantic.Field(
         default=None, description="Subject line of the email"
     )
-    snippet: Optional[str] = Field(
+    snippet: Optional[str] = pydantic.Field(
         default=None,
         description="Short snippet of the email body",
     )
-    senders: Optional[str] = Field(
+    senders: Optional[str] = pydantic.Field(
         default=None, description="Sender(s) of the email"
     )
-    recipients: Optional[str] = Field(
+    recipients: Optional[str] = pydantic.Field(
         default=None, description="Recipient(s) of the email"
     )
-    cc: Optional[str] = Field(default=None, description="CC recipient(s)")
-    bcc: Optional[str] = Field(default=None, description="BCC recipient(s)")
-    mail_data: Optional[gmail_types.Message] = Field(
+    cc: Optional[str] = pydantic.Field(
+        default=None, description="CC recipient(s)"
+    )
+    bcc: Optional[str] = pydantic.Field(
+        default=None, description="BCC recipient(s)"
+    )
+    mail_data: Optional[gmail_types.Message] = pydantic.Field(
         default=None,
         description="The full email message data",
     )
@@ -153,7 +157,7 @@ class MailMetadataDb:
 class MailSource(analysis_types.Source):
     """Email source data for analysis."""
 
-    mail_metadata: MailMetadata = Field(
+    mail_metadata: MailMetadata = pydantic.Field(
         default_factory=lambda: MailMetadata(id=""),
         description="Metadata of the email",
     )
@@ -199,27 +203,27 @@ class MailSourceDb(analysis_types.SourceDb):
         )
 
 
-class MailPipelineConfig(BaseModel):
+class MailPipelineConfig(pydantic.BaseModel):
     """Configuration for processing."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     gmail_query: Optional[str] = None
     force_all: bool = False
-    categorization_template: Optional[str] = Field(
+    categorization_template: Optional[str] = pydantic.Field(
         default=None, json_schema_extra={'expand_file': True}
     )
-    categories_instructions: Optional[str] = Field(
+    categories_instructions: Optional[str] = pydantic.Field(
         default=None, json_schema_extra={'expand_file': True}
     )
-    action_items_instructions: Optional[str] = Field(
+    action_items_instructions: Optional[str] = pydantic.Field(
         default=None,
         json_schema_extra={'expand_file': True},
     )
-    context_instructions: Optional[str] = Field(
+    context_instructions: Optional[str] = pydantic.Field(
         default=None, json_schema_extra={'expand_file': True}
     )
-    define: Optional[dict[str, Any]] = Field(
+    define: Optional[dict[str, Any]] = pydantic.Field(
         default=None,
         json_schema_extra={
             'expand_dict': True,
@@ -248,6 +252,6 @@ class MailPipelineConfig(BaseModel):
 class MailConfig(MailPipelineConfig):
     """Configuration for execution."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     interval: float = 60

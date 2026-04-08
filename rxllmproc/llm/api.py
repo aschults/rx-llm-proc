@@ -396,7 +396,9 @@ class AiWrapper(LlmBase):
                 pydantic_parts.append(str(self.preproc(p)))
 
         # Join text parts if possible
-        user_prompt: Union[str, list[Union[str, pydantic_ai.messages.UploadedFile]]]
+        user_prompt: Union[
+            str, list[Union[str, pydantic_ai.messages.UploadedFile]]
+        ]
         if all(isinstance(p, str) for p in pydantic_parts):
             user_prompt = " ".join(cast(list[str], pydantic_parts))
         else:

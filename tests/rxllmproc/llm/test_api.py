@@ -12,7 +12,8 @@ from google.genai import types as genai_types  # type: ignore
 from pyfakefs import fake_filesystem_unittest
 import pydantic_ai
 import pydantic_ai.models
-import pydantic_ai.models.google
+import pydantic_ai.models.google  # type: ignore
+
 
 from rxllmproc.llm import api as llm_api
 from rxllmproc.core.infra import containers
@@ -305,7 +306,7 @@ class TestAiWrapper(unittest.TestCase):
 
     def test_tool_passing_with_test_model(self):
         """Test that tools are correctly passed using pydantic_ai TestModel."""
-        from pydantic_ai.models.test import TestModel
+        from pydantic_ai.models import test as pydantic_ai_test
 
         tool = pydantic_ai.Tool(
             lambda: 'tool response', name='my_tool', description='test tool'
@@ -313,7 +314,7 @@ class TestAiWrapper(unittest.TestCase):
 
         # TestModel by default will try to call tools if they are provided
         # and the prompt suggests it, or it just returns tool calls if configured.
-        test_model = TestModel()
+        test_model = pydantic_ai_test.TestModel()
 
         self.instance = llm_api.AiWrapper(model=test_model)
         self.instance.add_function(tool)

@@ -1,39 +1,39 @@
 """Dataclasses for Google Docs API requests."""
 
 from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, ConfigDict
+import pydantic
 
 
-class Location(BaseModel):
+class Location(pydantic.BaseModel):
     """A location in a document."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     index: int
 
 
-class Dimension(BaseModel):
+class Dimension(pydantic.BaseModel):
     """A magnitude in a single direction in the specified units."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     magnitude: float = 0.0
     unit: str = "pt"
 
 
-class InsertTextRequest(BaseModel):
+class InsertTextRequest(pydantic.BaseModel):
     """Inserts text into a document."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     text: str
     location: Location
 
 
-class RgbColor(BaseModel):
+class RgbColor(pydantic.BaseModel):
     """An RGB color."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     # Set optional since REST call returns RgbColor with no fields.
     red: Optional[float] = None
@@ -41,44 +41,44 @@ class RgbColor(BaseModel):
     blue: Optional[float] = None
 
 
-class Color(BaseModel):
+class Color(pydantic.BaseModel):
     """A color."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     rgbColor: RgbColor
 
 
-class ForegroundColor(BaseModel):
+class ForegroundColor(pydantic.BaseModel):
     """The foreground color of a text style."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     color: Color
 
 
-class WeightedFontFamily(BaseModel):
+class WeightedFontFamily(pydantic.BaseModel):
     """A weighted font family."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     fontFamily: str | None = None
     weight: int | None = None
 
 
-class Link(BaseModel):
+class Link(pydantic.BaseModel):
     """A link."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     url: str | None = None
     headingId: str | None = None
 
 
-class TextStyle(BaseModel):
+class TextStyle(pydantic.BaseModel):
     """A text style."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     bold: Optional[bool] = None
     italic: Optional[bool] = None
@@ -88,29 +88,29 @@ class TextStyle(BaseModel):
     link: Optional[Link] = None
 
 
-class Range(BaseModel):
+class Range(pydantic.BaseModel):
     """A range of text in a document."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     startIndex: int
     endIndex: int
 
 
-class UpdateTextStyleRequest(BaseModel):
+class UpdateTextStyleRequest(pydantic.BaseModel):
     """Updates the text style of a range of text."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     range: Range
     textStyle: TextStyle
     fields: str
 
 
-class ParagraphStyle(BaseModel):
+class ParagraphStyle(pydantic.BaseModel):
     """A paragraph style."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     namedStyleType: str
     indentStart: Optional[Dimension] = None
@@ -118,45 +118,45 @@ class ParagraphStyle(BaseModel):
     headingId: Optional[str] = None
 
 
-class UpdateParagraphStyleRequest(BaseModel):
+class UpdateParagraphStyleRequest(pydantic.BaseModel):
     """Updates the paragraph style of a range of text."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     range: Range
     paragraphStyle: ParagraphStyle
     fields: str
 
 
-class DeleteParagraphBulletsRequest(BaseModel):
+class DeleteParagraphBulletsRequest(pydantic.BaseModel):
     """Deletes bullets from a range of text."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     range: Range
 
 
-class CreateParagraphBulletsRequest(BaseModel):
+class CreateParagraphBulletsRequest(pydantic.BaseModel):
     """Creates bullets for a range of text."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     range: Range
     bulletPreset: str
 
 
-class DeleteContentRangeRequest(BaseModel):
+class DeleteContentRangeRequest(pydantic.BaseModel):
     """Deletes a range of content from a document."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     range: Range
 
 
-class Request(BaseModel):
+class Request(pydantic.BaseModel):
     """A single request in a batch update."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     insertText: Optional[InsertTextRequest] = None
     updateTextStyle: Optional[UpdateTextStyleRequest] = None
@@ -166,123 +166,123 @@ class Request(BaseModel):
     deleteContentRange: Optional[DeleteContentRangeRequest] = None
 
 
-class SectionBreak(BaseModel):
+class SectionBreak(pydantic.BaseModel):
     """A section break."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     sectionStyle: Optional[Any] = None
 
 
-class TableCell(BaseModel):
+class TableCell(pydantic.BaseModel):
     """A table cell."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     content: List["StructuralElement"]
     startIndex: int
     endIndex: int
 
 
-class TableRow(BaseModel):
+class TableRow(pydantic.BaseModel):
     """A table row."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     tableCells: List[TableCell]
     startIndex: int
     endIndex: int
 
 
-class Table(BaseModel):
+class Table(pydantic.BaseModel):
     """A table."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     tableRows: List[TableRow]
     columns: int
     rows: int
 
 
-class TableOfContents(BaseModel):
+class TableOfContents(pydantic.BaseModel):
     """A table of contents."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     content: List["StructuralElement"]
 
 
-class AutoText(BaseModel):
+class AutoText(pydantic.BaseModel):
     """Auto text."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     type: str
     textStyle: Optional["TextStyle"] = None
 
 
-class PageBreak(BaseModel):
+class PageBreak(pydantic.BaseModel):
     """A page break."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     textStyle: Optional["TextStyle"] = None
 
 
-class ColumnBreak(BaseModel):
+class ColumnBreak(pydantic.BaseModel):
     """A column break."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     textStyle: Optional["TextStyle"] = None
 
 
-class FootnoteReference(BaseModel):
+class FootnoteReference(pydantic.BaseModel):
     """A footnote reference."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     footnoteId: str
     footnoteNumber: Optional[str] = None
     textStyle: Optional["TextStyle"] = None
 
 
-class HorizontalRule(BaseModel):
+class HorizontalRule(pydantic.BaseModel):
     """A horizontal rule."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     textStyle: Optional["TextStyle"] = None
 
 
-class Equation(BaseModel):
+class Equation(pydantic.BaseModel):
     """An equation."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
 
-class Person(BaseModel):
+class Person(pydantic.BaseModel):
     """A person."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     personProperties: Optional[Any] = None
     textStyle: Optional["TextStyle"] = None
 
 
-class RichLink(BaseModel):
+class RichLink(pydantic.BaseModel):
     """A rich link."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     richLinkProperties: Optional[Any] = None
     textStyle: Optional["TextStyle"] = None
 
 
-class DateElementProperties(BaseModel):
+class DateElementProperties(pydantic.BaseModel):
     """Properties of a date element."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     timestamp: str
     locale: str
@@ -291,20 +291,20 @@ class DateElementProperties(BaseModel):
     displayText: str
 
 
-class DateElement(BaseModel):
+class DateElement(pydantic.BaseModel):
     """A date element."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     dateId: str
     textStyle: Optional["TextStyle"] = None
     dateElementProperties: Optional[DateElementProperties] = None
 
 
-class ParagraphElement(BaseModel):
+class ParagraphElement(pydantic.BaseModel):
     """A paragraph element."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     startIndex: int
     endIndex: int
@@ -320,19 +320,19 @@ class ParagraphElement(BaseModel):
     dateElement: Optional[DateElement] = None
 
 
-class Paragraph(BaseModel):
+class Paragraph(pydantic.BaseModel):
     """A paragraph."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     elements: List[ParagraphElement]
     paragraphStyle: Optional[ParagraphStyle] = None
 
 
-class StructuralElement(BaseModel):
+class StructuralElement(pydantic.BaseModel):
     """A structural element."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     def model_post_init(self, __context: Any) -> None:
         """Post-initialization to set default startIndex."""
@@ -347,27 +347,27 @@ class StructuralElement(BaseModel):
     tableOfContents: Optional[TableOfContents] = None
 
 
-class Body(BaseModel):
+class Body(pydantic.BaseModel):
     """The body of a document."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     content: List[StructuralElement]
 
 
-class TextRun(BaseModel):
+class TextRun(pydantic.BaseModel):
     """A text run."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     content: str
     textStyle: Optional[TextStyle] = None
 
 
-class DocumentStyle(BaseModel):
+class DocumentStyle(pydantic.BaseModel):
     """The style of a document."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     background: Optional[Any] = None
     defaultHeaderId: Optional[str] = None
@@ -389,27 +389,27 @@ class DocumentStyle(BaseModel):
     flipPageOrientation: Optional[bool] = None
 
 
-class NamedStyle(BaseModel):
+class NamedStyle(pydantic.BaseModel):
     """A named style."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     textStyle: Optional[TextStyle] = None
     paragraphStyle: Optional[ParagraphStyle] = None
 
 
-class NamedStyles(BaseModel):
+class NamedStyles(pydantic.BaseModel):
     """The named styles of a document."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     styles: List[NamedStyle]
 
 
-class Document(BaseModel):
+class Document(pydantic.BaseModel):
     """A Google Docs document."""
 
-    model_config = ConfigDict(from_attributes=True, extra='ignore')
+    model_config = pydantic.ConfigDict(from_attributes=True, extra='ignore')
 
     documentId: str
     title: Optional[str] = None

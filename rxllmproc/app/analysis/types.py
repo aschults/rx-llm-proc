@@ -2,7 +2,7 @@
 
 import datetime
 from typing import List, Optional, Any
-from pydantic import BaseModel, Field, ConfigDict
+import pydantic
 
 import sqlalchemy
 import sqlalchemy.orm
@@ -11,59 +11,61 @@ from sqlalchemy.ext import orderinglist
 from rxllmproc.database import api as database
 
 
-class Link(BaseModel):
+class Link(pydantic.BaseModel):
     """Represent a link with a title and a URL."""
 
-    model_config = ConfigDict(from_attributes=True, extra='ignore')
+    model_config = pydantic.ConfigDict(from_attributes=True, extra='ignore')
 
-    title: str = Field(description="Title of the link")
-    url: str = Field(description="URL of the link")
+    title: str = pydantic.Field(description="Title of the link")
+    url: str = pydantic.Field(description="URL of the link")
 
 
-class Identifier(BaseModel):
+class Identifier(pydantic.BaseModel):
     """Represent an identifier in an email or text."""
 
-    model_config = ConfigDict(from_attributes=True, extra='ignore')
+    model_config = pydantic.ConfigDict(from_attributes=True, extra='ignore')
 
-    name: str = Field(description="Name of the identifier")
-    value: str = Field(description="Value of the identifier")
+    name: str = pydantic.Field(description="Name of the identifier")
+    value: str = pydantic.Field(description="Value of the identifier")
 
 
-class Person(BaseModel):
+class Person(pydantic.BaseModel):
     """Represent a person in an email or text."""
 
-    model_config = ConfigDict(from_attributes=True, extra='ignore')
+    model_config = pydantic.ConfigDict(from_attributes=True, extra='ignore')
 
-    name: str = Field(description="Name of the person")
-    role: str = Field(
+    name: str = pydantic.Field(description="Name of the person")
+    role: str = pydantic.Field(
         description="The role of the person in the text, e.g. recipient, sender, collaborator,..."
     )
 
 
-class ActionItem(BaseModel):
+class ActionItem(pydantic.BaseModel):
     """Represent an action item in an email or text."""
 
-    model_config = ConfigDict(from_attributes=True, extra='ignore')
+    model_config = pydantic.ConfigDict(from_attributes=True, extra='ignore')
 
-    analysis_id: Optional[str] = Field(default=None, description="Analysis ID")
-    action_number: int = Field(
+    analysis_id: Optional[str] = pydantic.Field(
+        default=None, description="Analysis ID"
+    )
+    action_number: int = pydantic.Field(
         default=0, description="Sequence number of the action item"
     )
-    title: Optional[str] = Field(
+    title: Optional[str] = pydantic.Field(
         default=None, description="one line title or summary of the action item"
     )
-    notes: Optional[str] = Field(
+    notes: Optional[str] = pydantic.Field(
         default=None, description="Detailed notes for the action item"
     )
-    priority: Optional[str] = Field(
+    priority: Optional[str] = pydantic.Field(
         default=None,
         description="Priority of the action item (e.g., High, Medium, Low)",
     )
-    due_date: Optional[str] = Field(
+    due_date: Optional[str] = pydantic.Field(
         default=None,
         description="Due date for the action item in YYYY-MM-DD format",
     )
-    links: Optional[List[Link]] = Field(
+    links: Optional[List[Link]] = pydantic.Field(
         default=None,
         description="List of relevant links, each with 'title' and 'url'",
     )
@@ -106,20 +108,22 @@ class ActionItemDb:
         registry.map_imperatively(cls, table)
 
 
-class ActionItemPlacement(BaseModel):
+class ActionItemPlacement(pydantic.BaseModel):
     """Tracks where an action item has been placed."""
 
-    model_config = ConfigDict(from_attributes=True, extra='ignore')
+    model_config = pydantic.ConfigDict(from_attributes=True, extra='ignore')
 
-    analysis_id: Optional[str] = Field(default=None, description="Analysis ID")
-    action_number: Optional[int] = Field(
+    analysis_id: Optional[str] = pydantic.Field(
+        default=None, description="Analysis ID"
+    )
+    action_number: Optional[int] = pydantic.Field(
         default=None, description="Sequence number of the action item"
     )
-    placement_container_url: Optional[str] = Field(
+    placement_container_url: Optional[str] = pydantic.Field(
         default=None,
         description="Reference to the container in the target system (e.g. Docs URL)",
     )
-    placement_id: Optional[str] = Field(
+    placement_id: Optional[str] = pydantic.Field(
         default=None,
         description="ID in the target system, i.e. how to find the item within the container",
     )
@@ -158,29 +162,31 @@ class ActionItemPlacementDb:
         registry.map_imperatively(cls, table)
 
 
-class Analysis(BaseModel):
+class Analysis(pydantic.BaseModel):
     """Store all mail analysis results."""
 
-    model_config = ConfigDict(from_attributes=True, extra='ignore')
+    model_config = pydantic.ConfigDict(from_attributes=True, extra='ignore')
 
-    id: Optional[str] = Field(default=None, description="Content Source ID.")
-    category: Optional[str] = Field(
+    id: Optional[str] = pydantic.Field(
+        default=None, description="Content Source ID."
+    )
+    category: Optional[str] = pydantic.Field(
         default=None,
         description="Category of the email, format: 'this_is_a_category'",
     )
-    noteworthy_details: List[str] = Field(
+    noteworthy_details: List[str] = pydantic.Field(
         default_factory=lambda: [],
         description="noteworthy details, bullet list style, one bullet per list item",
     )
-    action_items: List[ActionItem] = Field(
+    action_items: List[ActionItem] = pydantic.Field(
         default_factory=lambda: [],
         description="List of action items extracted from the email",
     )
-    people: List[Person] = Field(
+    people: List[Person] = pydantic.Field(
         default_factory=lambda: [],
         description="Key people mentioned in the email and their roles",
     )
-    identifiers: List[Identifier] = Field(
+    identifiers: List[Identifier] = pydantic.Field(
         default_factory=lambda: [],
         description="Key identifiers found in the email (e.g., ticket numbers, project codes, order numbers,...)",
     )
@@ -231,17 +237,19 @@ class AnalysisDb:
         )
 
 
-class Source(BaseModel):
+class Source(pydantic.BaseModel):
     """Base source data."""
 
-    model_config = ConfigDict(from_attributes=True, extra='ignore')
+    model_config = pydantic.ConfigDict(from_attributes=True, extra='ignore')
 
-    id: str = Field(description="The unique ID (url) of the content source.")
-    created_time: datetime.datetime = Field(
+    id: str = pydantic.Field(
+        description="The unique ID (url) of the content source."
+    )
+    created_time: datetime.datetime = pydantic.Field(
         default_factory=lambda: datetime.datetime.now(datetime.timezone.utc),
         description="Time of creation.",
     )
-    analysis: Optional[Analysis] = Field(
+    analysis: Optional[Analysis] = pydantic.Field(
         default=None, description="Analysis of the content"
     )
 

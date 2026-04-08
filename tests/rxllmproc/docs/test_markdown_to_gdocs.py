@@ -1,4 +1,4 @@
-from rxllmproc.docs.markdown_to_gdocs import convert_markdown_to_requests
+from rxllmproc.docs import markdown_to_gdocs
 
 import test_support
 
@@ -7,14 +7,14 @@ fail_none = test_support.fail_none
 
 def test_empty_input():
     """Test that empty or whitespace-only input produces no requests."""
-    assert convert_markdown_to_requests("") == []
-    assert convert_markdown_to_requests("   \n   ") == []
+    assert markdown_to_gdocs.convert_markdown_to_requests("") == []
+    assert markdown_to_gdocs.convert_markdown_to_requests("   \n   ") == []
 
 
 def test_single_paragraph():
     """Test conversion of a single paragraph."""
     markdown = "Hello world."
-    requests = convert_markdown_to_requests(markdown)
+    requests = markdown_to_gdocs.convert_markdown_to_requests(markdown)
     assert len(requests) == 3  # insert, update para style, delete bullets
 
     insert_req = fail_none(next(r for r in requests if r.insertText))
@@ -36,7 +36,7 @@ def test_single_paragraph():
 def test_multiple_paragraphs():
     """Test conversion of multiple paragraphs separated by blank lines."""
     markdown = "Paragraph 1.\n\nParagraph 2."
-    requests = convert_markdown_to_requests(markdown)
+    requests = markdown_to_gdocs.convert_markdown_to_requests(markdown)
     # Each paragraph block has 3 requests. Total = 6.
     assert len(requests) == 6
 
@@ -60,7 +60,7 @@ def test_multiple_paragraphs():
 def test_single_bullet_item():
     """Test conversion of a single bullet list item."""
     markdown = "* List item 1"
-    requests = convert_markdown_to_requests(
+    requests = markdown_to_gdocs.convert_markdown_to_requests(
         markdown
     )  # insert, delete bullets, para style, create bullets, delete newline
     assert len(requests) == 5
@@ -95,7 +95,7 @@ def test_single_bullet_item():
 def test_multiple_bullet_items():
     """Test conversion of a multi-item bullet list."""
     markdown = "* Item 1\n* Item 2"
-    requests = convert_markdown_to_requests(
+    requests = markdown_to_gdocs.convert_markdown_to_requests(
         markdown
     )  # 2 items * 5 requests each = 10
     assert len(requests) == 10
@@ -118,7 +118,7 @@ def test_multiple_bullet_items():
 def test_dash_list_item():
     """Test that a dash (-) creates a bulleted list item."""
     markdown = "- List item"
-    requests = convert_markdown_to_requests(markdown)
+    requests = markdown_to_gdocs.convert_markdown_to_requests(markdown)
     assert len(requests) == 5
 
     # Check that a createParagraphBullets request was created
@@ -135,7 +135,7 @@ def test_dash_list_item():
 def test_paragraph_followed_by_bullet_list():
     """Test a paragraph followed by a bullet list, separated by a single newline."""
     markdown = "Here are some points:\n* Point 1\n* Point 2"
-    requests = convert_markdown_to_requests(
+    requests = markdown_to_gdocs.convert_markdown_to_requests(
         markdown
     )  # 1 para (3 reqs) + 2 bullets (5 reqs each) = 13
     assert len(requests) == 13
@@ -165,7 +165,7 @@ def test_paragraph_followed_by_bullet_list():
 def test_bullet_list_followed_by_paragraph():
     """Test a bullet list followed by a paragraph, separated by a single newline."""
     markdown = "* Point 1\n* Point 2\n\nAnd a conclusion."
-    requests = convert_markdown_to_requests(
+    requests = markdown_to_gdocs.convert_markdown_to_requests(
         markdown
     )  # 2 bullets (5 reqs each) + 1 para (3 reqs) = 13
     assert len(requests) == 13
@@ -194,7 +194,7 @@ def test_bullet_list_followed_by_paragraph():
 def test_paragraph_with_line_breaks():
     """Test that single newlines (soft breaks) in a paragraph become spaces."""
     markdown = "Line 1\nLine 2"
-    requests = convert_markdown_to_requests(markdown)
+    requests = markdown_to_gdocs.convert_markdown_to_requests(markdown)
     insert_req = fail_none(next(r for r in requests if r.insertText))
     bullet_req = fail_none(
         next(r for r in requests if r.deleteParagraphBullets)
@@ -207,7 +207,7 @@ def test_paragraph_with_line_breaks():
 def test_paragraph_with_hard_break():
     """Test that a hard break (two spaces + newline) becomes a vertical tab."""
     markdown = "Line 1  \nLine 2"
-    requests = convert_markdown_to_requests(markdown)
+    requests = markdown_to_gdocs.convert_markdown_to_requests(markdown)
     assert len(requests) == 3
     insert_req = fail_none(next(r for r in requests if r.insertText))
     assert fail_none(insert_req.insertText).text == "Line 1\vLine 2\n"
@@ -216,7 +216,7 @@ def test_paragraph_with_hard_break():
 def test_bold_text():
     """Test a paragraph containing bold text."""
     markdown = "This is **bold** text."
-    requests = convert_markdown_to_requests(markdown)
+    requests = markdown_to_gdocs.convert_markdown_to_requests(markdown)
     assert len(requests) == 4  # insert, bold style, para style, para bullets
 
     # Find the insertText and bold requests dynamically instead of by index.
@@ -240,7 +240,7 @@ def test_bold_text():
 def test_link_text():
     """Test a paragraph containing a hyperlink."""
     markdown = "Visit [Google](https://google.com)."
-    requests = convert_markdown_to_requests(markdown)
+    requests = markdown_to_gdocs.convert_markdown_to_requests(markdown)
     assert len(requests) == 4  # insert, link style, para style, para bullets
 
     # Find the insertText and link requests dynamically.
@@ -267,7 +267,7 @@ def test_link_text():
 def test_bold_and_link():
     """Test a paragraph with both bold and linked text."""
     markdown = "A **bold** and a [link](https://example.com)."
-    requests = convert_markdown_to_requests(markdown)
+    requests = markdown_to_gdocs.convert_markdown_to_requests(markdown)
     assert len(requests) == 5  # insert, bold, link, para style, para bullets
 
     insert_request = fail_none(next(r for r in requests if r.insertText))
@@ -287,7 +287,7 @@ def test_bold_and_link():
 def test_nested_bullet_list():
     """Test conversion of a nested bullet list."""
     markdown = "* Level 1\n  * Level 2"
-    requests = convert_markdown_to_requests(
+    requests = markdown_to_gdocs.convert_markdown_to_requests(
         markdown
     )  # 2 items * 5 requests each = 10
     assert len(requests) == 10
@@ -311,7 +311,7 @@ def test_nested_bullet_list():
 def test_single_indented_paragraph():
     """Test a single indented paragraph."""
     markdown = ". An indented paragraph."
-    requests = convert_markdown_to_requests(markdown)
+    requests = markdown_to_gdocs.convert_markdown_to_requests(markdown)
     # insert, para style (normal), delete bullets, para style (indent)
     assert len(requests) == 4
 
@@ -336,7 +336,7 @@ def test_single_indented_paragraph():
 def test_multi_level_indented_paragraph():
     """Test multiple levels of indentation."""
     markdown = "... A deeply indented paragraph."
-    requests = convert_markdown_to_requests(markdown)
+    requests = markdown_to_gdocs.convert_markdown_to_requests(markdown)
     assert len(requests) == 4
 
     indent_req = fail_none(
@@ -354,7 +354,7 @@ def test_multi_level_indented_paragraph():
 def test_mixed_paragraphs():
     """Test indented paragraphs mixed with regular ones."""
     markdown = "Regular paragraph.\n\n. Indented one."
-    requests = convert_markdown_to_requests(markdown)
+    requests = markdown_to_gdocs.convert_markdown_to_requests(markdown)
     assert len(requests) == 7  # 4 for indented, 3 for regular
 
     # The first block of requests is for the last paragraph (indented)
@@ -377,7 +377,7 @@ def test_mixed_paragraphs():
 def test_heading_level_1():
     """Test conversion of a level 1 heading."""
     markdown = "# My Heading"
-    requests = convert_markdown_to_requests(markdown)
+    requests = markdown_to_gdocs.convert_markdown_to_requests(markdown)
     assert len(requests) == 3  # insert, update para style, delete bullets
 
     insert_req = fail_none(next(r for r in requests if r.insertText))
@@ -394,7 +394,7 @@ def test_list_with_empty_item():
     """Test that a list with an empty item doesn't cause a crash."""
     # The empty line between the two items can cause an "insertText" KeyError if not handled.
     markdown = "* Item 1\n*\n* Item 2"
-    requests = convert_markdown_to_requests(markdown)
+    requests = markdown_to_gdocs.convert_markdown_to_requests(markdown)
 
     # Should produce requests for 2 items (5 reqs each), ignoring the empty one.
     assert len(requests) == 10
@@ -405,7 +405,7 @@ def test_list_with_empty_item():
 def test_single_numbered_list_item():
     """Test conversion of a single numbered list item."""
     markdown = "1. First item"
-    requests = convert_markdown_to_requests(markdown)
+    requests = markdown_to_gdocs.convert_markdown_to_requests(markdown)
     assert len(requests) == 5
 
     insert_req = fail_none(next(r for r in requests if r.insertText))

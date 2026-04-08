@@ -18,7 +18,7 @@ import argparse
 from pathlib import Path
 
 # Packages allowed to export symbols directly for sanity
-WHITELIST = {"typing", "abc", "__future__", "pydantic", "typing_extensions"}
+WHITELIST = {"typing", "abc", "__future__", "typing_extensions"}
 
 
 def is_submodule(parent_module_str: str, member_name: str) -> bool:

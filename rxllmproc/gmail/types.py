@@ -5,17 +5,17 @@ import re
 import logging
 from typing import cast, Any, Optional, List
 from email import parser, policy, message
-from pydantic import BaseModel, Field, ConfigDict, PrivateAttr
+import pydantic
 
 import sqlalchemy
 import sqlalchemy.orm
 from rxllmproc.text_processing import email_processing
 
 
-class Header(BaseModel):
+class Header(pydantic.BaseModel):
     """Single email header."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     name: str
     value: str
@@ -33,27 +33,27 @@ class Header(BaseModel):
         return None
 
 
-class MessagePartBody(BaseModel):
+class MessagePartBody(pydantic.BaseModel):
     """Body of an email part."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     attachmentId: str | None = None
     size: int | None = None
     data: str | None = None
 
 
-class MessagePart(BaseModel):
+class MessagePart(pydantic.BaseModel):
     """Part of a message."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     partId: str | None = None
     mimeType: str | None = None
     filename: str | None = None
-    headers: List[Header] = Field(default_factory=lambda: [])
-    body: MessagePartBody = Field(default_factory=MessagePartBody)
-    parts: List["MessagePart"] = Field(default_factory=lambda: [])
+    headers: List[Header] = pydantic.Field(default_factory=lambda: [])
+    body: MessagePartBody = pydantic.Field(default_factory=MessagePartBody)
+    parts: List["MessagePart"] = pydantic.Field(default_factory=lambda: [])
 
     @property
     def subject(self) -> str:
@@ -111,25 +111,25 @@ class MessagePart(BaseModel):
         return None
 
 
-class MessageId(BaseModel):
+class MessageId(pydantic.BaseModel):
     """The IDs (message, thread) of a GMail message."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     id: str
     threadId: str | None = None
 
 
-class Message(BaseModel):
+class Message(pydantic.BaseModel):
     """Represents one email message."""
 
-    model_config = ConfigDict(
+    model_config = pydantic.ConfigDict(
         from_attributes=True, extra='ignore', arbitrary_types_allowed=True
     )
 
     id: str | None = None
     threadId: str | None = None
-    labelIds: List[str] = Field(default_factory=list)
+    labelIds: List[str] = pydantic.Field(default_factory=list)
     snippet: str | None = None
     historyId: str | None = None
     internalDate: str | None = None
@@ -137,7 +137,9 @@ class Message(BaseModel):
     sizeEstimate: int | None = None
     raw: str | None = None
 
-    _parsed_msg: Optional[message.EmailMessage] = PrivateAttr(default=None)
+    _parsed_msg: Optional[message.EmailMessage] = pydantic.PrivateAttr(
+        default=None
+    )
 
     @property
     def parsed_msg(self) -> message.EmailMessage:

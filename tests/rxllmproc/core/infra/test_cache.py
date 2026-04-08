@@ -7,7 +7,7 @@ from unittest import mock
 import datetime
 from rxllmproc.core.infra import containers
 from rxllmproc.core.infra import cache
-from test_support import fail_none
+import test_support
 
 
 class TestCachedCall(unittest.TestCase):
@@ -83,15 +83,21 @@ class TestCacheEntry(unittest.TestCase):
         """Test simple insertion of a cached call."""
         instance = cache.CacheEntry()
         instance.add('_val', a=1)
-        self.assertEqual('_val', fail_none(instance.get(a=1)).value)
+        self.assertEqual(
+            '_val', test_support.fail_none(instance.get(a=1)).value
+        )
 
     def test_multiple(self):
         """Test insertion of multiple calls."""
         instance = cache.CacheEntry()
         instance.add('_val1', a=1)
         instance.add('_val2', a=2)
-        self.assertEqual('_val1', fail_none(instance.get(a=1)).value)
-        self.assertEqual('_val2', fail_none(instance.get(a=2)).value)
+        self.assertEqual(
+            '_val1', test_support.fail_none(instance.get(a=1)).value
+        )
+        self.assertEqual(
+            '_val2', test_support.fail_none(instance.get(a=2)).value
+        )
         self.assertIsNone(instance.get(a=3))
 
     def test_add_call(self):
@@ -111,7 +117,8 @@ class TestCache(unittest.TestCase):
         instance.add('some/func', 333, 100, a=1)
 
         self.assertEqual(
-            333, fail_none(instance.get('some/func', 100, a=1)).value
+            333,
+            test_support.fail_none(instance.get('some/func', 100, a=1)).value,
         )
 
     def test_multiple(self):
@@ -121,12 +128,16 @@ class TestCache(unittest.TestCase):
         instance.add('some/other', 222, 100, a=1)
         instance.add('some/func', 444, a=2)
         self.assertEqual(
-            333, fail_none(instance.get('some/func', 100, a=1)).value
+            333,
+            test_support.fail_none(instance.get('some/func', 100, a=1)).value,
         )
         self.assertEqual(
-            222, fail_none(instance.get('some/other', 100, a=1)).value
+            222,
+            test_support.fail_none(instance.get('some/other', 100, a=1)).value,
         )
-        self.assertEqual(444, fail_none(instance.get('some/func', a=2)).value)
+        self.assertEqual(
+            444, test_support.fail_none(instance.get('some/func', a=2)).value
+        )
 
     def test_bad_keys(self):
         """Test correctly responding to bad keys."""
@@ -634,4 +645,6 @@ class TestCachedCallFunction(unittest.TestCase):
         self.assertEqual(2, result)
 
         # Verify it's cached
-        self.assertEqual(2, fail_none(instance.get('key', a=1)).value)
+        self.assertEqual(
+            2, test_support.fail_none(instance.get('key', a=1)).value
+        )

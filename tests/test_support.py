@@ -4,7 +4,7 @@ from typing import TypeVar, List, Generic
 import base64
 import threading
 
-from reactivex.abc.observer import ObserverBase
+from reactivex.abc import observer
 
 from email import message
 
@@ -18,7 +18,7 @@ def fail_none(value: _T | None) -> _T:
     return value
 
 
-class RecordingObserver(ObserverBase[_T], Generic[_T]):
+class RecordingObserver(observer.ObserverBase[_T], Generic[_T]):
     """Observer that records all incoming items."""
 
     def __init__(self, assert_on_exception: bool = True) -> None:

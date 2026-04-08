@@ -1,7 +1,7 @@
 # pyright: basic
 """Test Cemini CLI class."""
 
-from typing import Any, List, Optional
+from typing import Any, Optional
 import contextlib
 import io
 import os
@@ -19,8 +19,11 @@ class DummyLlm(llm_api.LlmBase):
     """Dummy LLM implementation to test the CLI."""
 
     def query(
-        self, *prompt_parts: Any, output_format: Optional[str] = None,
-        schema: Any = None, **other: Any
+        self,
+        *prompt_parts: Any,
+        output_format: Optional[str] = None,
+        schema: Any = None,
+        **other: Any,
     ) -> str:
         """Return a fixed value for testing."""
         return "something"
@@ -45,13 +48,13 @@ class TestLlmCli(fake_filesystem_unittest.TestCase):
         self.wrap = mock.Mock(spec=DummyLlm)
         self.wrap.query.return_value = 'the_result'
         self.wrap.query_json.return_value = {'key': 'value'}
-        
+
         # We patch create_model GLOBALLY for most tests
         self.create_model_patcher = mock.patch(
             'rxllmproc.llm.api.create_model', return_value=self.wrap
         )
         self.create_model_patcher.start()
-        
+
         self.instance = llm_cli.LlmCli(self.creds)
 
     def tearDown(self) -> None:
@@ -97,7 +100,9 @@ class TestLlmCli(fake_filesystem_unittest.TestCase):
         """Test passing an API key."""
         # Stop global patcher to use a local one
         self.create_model_patcher.stop()
-        with mock.patch('rxllmproc.llm.api.create_model', return_value=self.wrap) as create_mock:
+        with mock.patch(
+            'rxllmproc.llm.api.create_model', return_value=self.wrap
+        ) as create_mock:
             self.instance.main(['the_query', '--api_key', 'test_key'])
             create_mock.assert_called()
             # Check kwargs of create_model
@@ -108,7 +113,9 @@ class TestLlmCli(fake_filesystem_unittest.TestCase):
     def test_model_selection(self):
         """Test selecting a different model."""
         self.create_model_patcher.stop()
-        with mock.patch('rxllmproc.llm.api.create_model', return_value=self.wrap) as create_mock:
+        with mock.patch(
+            'rxllmproc.llm.api.create_model', return_value=self.wrap
+        ) as create_mock:
             self.instance.main(['the_query', '--model', 'openai'])
             create_mock.assert_called()
             args = create_mock.call_args[0]
@@ -126,7 +133,10 @@ class TestLlmCli(fake_filesystem_unittest.TestCase):
         # Check if any part is a LocalFileContainer with the correct filename
         found = False
         for arg in args:
-            if isinstance(arg, containers.LocalFileContainer) and arg.filename == '/to_upload.txt':
+            if (
+                isinstance(arg, containers.LocalFileContainer)
+                and arg.filename == '/to_upload.txt'
+            ):
                 found = True
                 break
         self.assertTrue(found)
@@ -152,12 +162,17 @@ class TestLlmCli(fake_filesystem_unittest.TestCase):
         self.fs.create_file('/target.txt', contents='old_content')
         self.wrap.query.return_value = 'new_content'
 
-        self.instance.main([
-            'Update file',
-            '--context_files', '/target.txt',
-            '--writeable_files', '/target.txt',
-            '--output', '/target.txt'
-        ])
+        self.instance.main(
+            [
+                'Update file',
+                '--context_files',
+                '/target.txt',
+                '--writeable_files',
+                '/target.txt',
+                '--output',
+                '/target.txt',
+            ]
+        )
 
         with open('/target.txt', 'r', encoding='utf-8') as f:
             self.assertEqual(f.read(), 'new_content\n')
@@ -176,12 +191,17 @@ class TestLlmCli(fake_filesystem_unittest.TestCase):
         self.fs.create_file('/data/file1.txt', contents='old')
         self.wrap.query.return_value = 'new'
 
-        self.instance.main([
-            'Update',
-            '--context_files', '/data/file1.txt',
-            '--writeable_files', '/data/.*',
-            '--output', '/data/file1.txt'
-        ])
+        self.instance.main(
+            [
+                'Update',
+                '--context_files',
+                '/data/file1.txt',
+                '--writeable_files',
+                '/data/.*',
+                '--output',
+                '/data/file1.txt',
+            ]
+        )
 
         with open('/data/file1.txt', 'r', encoding='utf-8') as f:
             self.assertEqual(f.read(), 'new\n')
@@ -206,7 +226,9 @@ class TestLlmCli(fake_filesystem_unittest.TestCase):
         """Test fetching content from a URL."""
         with requests_mock.Mocker() as m:
             m.get('http://example.com', text='url_content')
-            self.instance.main(['Query http://example.com', '--enable_fetch_url'])
+            self.instance.main(
+                ['Query http://example.com', '--enable_fetch_url']
+            )
 
         self.wrap.query.assert_called()
 
@@ -235,7 +257,7 @@ class TestLlmCli(fake_filesystem_unittest.TestCase):
         )
 
         with mock.patch('sys.exit') as exit_mock:
-            with contextlib.redirect_stderr(io.StringIO()) as stderr:
+            with contextlib.redirect_stderr(io.StringIO()) as _:
                 self.instance.main(['query'])
 
         self.assertTrue(exit_mock.called)
@@ -253,14 +275,14 @@ class TestLlmCli(fake_filesystem_unittest.TestCase):
 
     def test_tool_passing_with_test_model(self):
         """Test that tools are correctly passed to the model from CLI."""
-        from pydantic_ai.models.test import TestModel
+        from pydantic_ai.models import test as pydantic_ai_test
 
-        test_model = TestModel()
+        test_model = pydantic_ai_test.TestModel()
         mock_google_client = mock.Mock()
         real_wrapper = llm_api.AiWrapper(
             model=test_model, google_client=mock_google_client
         )
-        cli_instance = llm_cli.LlmCli(real_wrapper)
+        cli_instance = llm_cli.LlmCli(self.creds)
 
         # Stop global patcher
         self.create_model_patcher.stop()
@@ -275,13 +297,13 @@ class TestLlmCli(fake_filesystem_unittest.TestCase):
 
                 with mock.patch('pydantic_ai.Agent.run', side_effect=mock_run):
                     stdout_capture = io.StringIO()
-                    with mock.patch(
-                        'sys.stdout', stdout_capture
-                    ):
-                        cli_instance.main([
-                            'Please fetch http://test.com',
-                            '--enable_fetch_url'
-                        ])
+                    with mock.patch('sys.stdout', stdout_capture):
+                        cli_instance.main(
+                            [
+                                'Please fetch http://test.com',
+                                '--enable_fetch_url',
+                            ]
+                        )
 
                 self.assertIn('cli_tool_content', stdout_capture.getvalue())
         self.create_model_patcher.start()

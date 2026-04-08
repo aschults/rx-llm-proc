@@ -2,16 +2,16 @@
 
 import datetime
 from typing import Literal
-from pydantic import BaseModel, Field, ConfigDict, field_serializer
+import pydantic
 
 import sqlalchemy
 import sqlalchemy.orm
 
 
-class TaskList(BaseModel):
+class TaskList(pydantic.BaseModel):
     """Represents a task list."""
 
-    model_config = ConfigDict(from_attributes=True, extra='ignore')
+    model_config = pydantic.ConfigDict(from_attributes=True, extra='ignore')
 
     title: str
     kind: Literal['tasks#taskList'] = 'tasks#taskList'
@@ -36,10 +36,10 @@ class TaskList(BaseModel):
         registry.map_imperatively(cls, table)
 
 
-class TaskLink(BaseModel):
+class TaskLink(pydantic.BaseModel):
     """Represents a link attached to a task."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     type: str | None = None
     description: str | None = None
@@ -49,10 +49,10 @@ class TaskLink(BaseModel):
 Status = Literal['completed', 'needsAction']
 
 
-class Task(BaseModel):
+class Task(pydantic.BaseModel):
     """Represents a single task."""
 
-    model_config = ConfigDict(from_attributes=True, extra='ignore')
+    model_config = pydantic.ConfigDict(from_attributes=True, extra='ignore')
 
     status: Status | None = None
     title: str | None = None
@@ -62,7 +62,7 @@ class Task(BaseModel):
     id: str | None = None
     etag: str | None = None
     selfLink: str | None = None
-    links: list[TaskLink] = Field(default_factory=lambda: [])
+    links: list[TaskLink] = pydantic.Field(default_factory=lambda: [])
     notes: str | None = None
     parent: str | None = None
     completed: datetime.datetime | None = None
@@ -70,7 +70,7 @@ class Task(BaseModel):
     hidden: bool | None = None
     due: datetime.datetime | None = None
 
-    @field_serializer('position')
+    @pydantic.field_serializer('position')
     def serialize_position(self, position: int) -> str:
         """Convert position to string for JSON."""
         return str(position)
@@ -105,7 +105,7 @@ class Task(BaseModel):
 class ManagedTask(Task):
     """Represents a task managed with an external ID."""
 
-    model_config = ConfigDict(from_attributes=True, extra='ignore')
+    model_config = pydantic.ConfigDict(from_attributes=True, extra='ignore')
 
     id_url: str | None = None
     tasklist_id: str | None = None

@@ -1,29 +1,29 @@
 """Google Calendar classes used in steps."""
 
 from typing import Any
-from pydantic import BaseModel, Field, ConfigDict
+import pydantic
 
 
-class EventDateTime(BaseModel):
+class EventDateTime(pydantic.BaseModel):
     """Date and time of an event."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     date: str | None = None
     dateTime: str | None = None
     timeZone: str | None = None
 
 
-class EventAttendee(BaseModel):
+class EventAttendee(pydantic.BaseModel):
     """Attendee of an event."""
 
-    model_config = ConfigDict(populate_by_name=True, extra='ignore')
+    model_config = pydantic.ConfigDict(populate_by_name=True, extra='ignore')
 
     email: str | None = None
     displayName: str | None = None
     organizer: bool | None = None
     # NOTE: Calendar API uses `self` as attribute.
-    is_self: bool | None = Field(None, alias="self")
+    is_self: bool | None = pydantic.Field(None, alias="self")
     resource: bool | None = None
     optional: bool | None = None
     responseStatus: str | None = None
@@ -31,28 +31,28 @@ class EventAttendee(BaseModel):
     additionalGuests: int | None = None
 
 
-class EventReminder(BaseModel):
+class EventReminder(pydantic.BaseModel):
     """Reminder for an event."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     method: str | None = None
     minutes: int | None = None
 
 
-class EventReminders(BaseModel):
+class EventReminders(pydantic.BaseModel):
     """Reminders for an event."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     useDefault: bool | None = None
-    overrides: list[EventReminder] = Field(default_factory=lambda: [])
+    overrides: list[EventReminder] = pydantic.Field(default_factory=lambda: [])
 
 
-class EventAttachment(BaseModel):
+class EventAttachment(pydantic.BaseModel):
     """Attachment of an event."""
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     fileUrl: str | None = None
     title: str | None = None
@@ -61,10 +61,10 @@ class EventAttachment(BaseModel):
     fileId: str | None = None
 
 
-class Event(BaseModel):
+class Event(pydantic.BaseModel):
     """Represents one calendar event."""
 
-    model_config = ConfigDict(populate_by_name=True, extra='ignore')
+    model_config = pydantic.ConfigDict(populate_by_name=True, extra='ignore')
 
     kind: str = "calendar#event"
     etag: str | None = None
@@ -89,7 +89,7 @@ class Event(BaseModel):
     visibility: str | None = None
     iCalUID: str | None = None
     sequence: int | None = None
-    attendees: list[EventAttendee] = Field(default_factory=lambda: [])
+    attendees: list[EventAttendee] = pydantic.Field(default_factory=lambda: [])
     attendeesOmitted: bool | None = None
     extendedProperties: dict[str, Any] | None = None
     hangoutLink: str | None = None
@@ -103,5 +103,7 @@ class Event(BaseModel):
     locked: bool | None = None
     reminders: EventReminders | None = None
     source: dict[str, Any] | None = None
-    attachments: list[EventAttachment] = Field(default_factory=lambda: [])
+    attachments: list[EventAttachment] = pydantic.Field(
+        default_factory=lambda: []
+    )
     eventType: str | None = None

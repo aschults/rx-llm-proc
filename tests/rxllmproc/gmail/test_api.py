@@ -8,7 +8,7 @@ from google.oauth2 import credentials  # type: ignore
 from rxllmproc.gmail import api as gmail_wrapper
 from rxllmproc.gmail import _interface as _gmail_interface
 
-from test_support import make_raw_email
+import test_support
 
 
 class TestWrapper(unittest.TestCase):
@@ -30,7 +30,7 @@ class TestWrapper(unittest.TestCase):
         )
         self.service.users().messages().get().execute.return_value = {
             "subject": "testsubject",
-            "raw": make_raw_email("testsubject", "msgd"),
+            "raw": test_support.make_raw_email("testsubject", "msgd"),
         }
 
         result = wrapper.get("theid")

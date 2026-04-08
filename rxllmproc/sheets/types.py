@@ -9,25 +9,25 @@ from typing import (
     Generic,
     TypedDict,
 )
-from pydantic import BaseModel, Field, ConfigDict
+import pydantic
 
 _T = TypeVar('_T', bound=object)
 
 
-class Formula(BaseModel):
+class Formula(pydantic.BaseModel):
     """Represents a Sheets formula."""
 
     formula: str
 
 
-class ErrorValue(BaseModel):
+class ErrorValue(pydantic.BaseModel):
     """Represents error value, as read from the API.
 
     See Also:
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/other#ErrorValue.
     """
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     type: str = ""
     message: str
@@ -37,14 +37,14 @@ class ErrorValue(BaseModel):
 CellValueType = float | str | bool | ErrorValue | Formula | None
 
 
-class ExtendedValue(BaseModel):
+class ExtendedValue(pydantic.BaseModel):
     """Cell value, as read from the API.
 
     See Also:
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/other#ExtendedValue.
     """
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     numberValue: float | None = None
     stringValue: str | None = None
@@ -85,40 +85,40 @@ class ExtendedValue(BaseModel):
         return None
 
 
-class Color(BaseModel):
+class Color(pydantic.BaseModel):
     """Representation of a color.
 
     See Also:
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/other#Color
     """
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     red: float = 0.0
     green: float = 0.0
     blue: float = 0.0
 
 
-class Link(BaseModel):
+class Link(pydantic.BaseModel):
     """Representation of Link in the API.
 
     See Also:
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/other#link
     """
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     uri: str
 
 
-class TextFormat(BaseModel):
+class TextFormat(pydantic.BaseModel):
     """Format of one run of the cell text.
 
     See Also:
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/other#TextFormat
     """
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     foregroundColor: Color | None = None
     fontFamily: str | None = None
@@ -130,46 +130,48 @@ class TextFormat(BaseModel):
     link: Link | None = None
 
 
-class TextFormatRun(BaseModel):
+class TextFormatRun(pydantic.BaseModel):
     """Text format for a fragment of the text.
 
     See Also:
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/cells#TextFormatRun
     """
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     format: TextFormat
     startIndex: int = 0
 
 
-class CellData(BaseModel):
+class CellData(pydantic.BaseModel):
     """Data for a single cell, as returned from the API.
 
     See Also:
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/cells#CellData.
     """
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     userEnteredValue: ExtendedValue | None = None
     effectiveValue: ExtendedValue | None = None
     formattedValue: str | None = None
     hyperlink: str | None = None
     note: str | None = None
-    textFormatRuns: list[TextFormatRun] = Field(default_factory=lambda: [])
+    textFormatRuns: list[TextFormatRun] = pydantic.Field(
+        default_factory=lambda: []
+    )
 
 
-class RowData(BaseModel):
+class RowData(pydantic.BaseModel):
     """Data for a row witin a GridData, as returned from the API.
 
     See Also:
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#RowData.
     """
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
-    values: list[CellData] = Field(default_factory=lambda: [])
+    values: list[CellData] = pydantic.Field(default_factory=lambda: [])
 
     def normalzeRows(self, width: int):
         """Bring the cells in the row to the indicated number of columns.
@@ -212,14 +214,14 @@ def getEffectiveValueRow(
     return [valueConverter(value) for value in row.values]
 
 
-class GridRange(BaseModel):
+class GridRange(pydantic.BaseModel):
     """Range reference in a sheet.
 
     See Also:
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/other#GridRange.
     """
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     sheetId: int
     startRowIndex: int
@@ -231,30 +233,30 @@ class GridRange(BaseModel):
     endColumnIndex: int
 
 
-class NamedRange(BaseModel):
+class NamedRange(pydantic.BaseModel):
     """Named range in the sheet.
 
     See Also:
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets#NamedRange.
     """
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     namedRangeId: str
     name: str
     range: GridRange
 
 
-class GridData(BaseModel):
+class GridData(pydantic.BaseModel):
     """Grid cell data for a sheet or a section of a sheet.
 
     See Also:
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#GridData.
     """
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
-    rowData: list[RowData] = Field(default_factory=lambda: [])
+    rowData: list[RowData] = pydantic.Field(default_factory=lambda: [])
     startRow: int = 0
     startColumn: int = 0
 
@@ -302,30 +304,30 @@ class GridData(BaseModel):
         )
 
 
-class Sheet(BaseModel):
+class Sheet(pydantic.BaseModel):
     """Single sheet in a spreadsheet.
 
     See Also:
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#Sheet.
     """
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
-    data: list[GridData] = Field(default_factory=lambda: [])
+    data: list[GridData] = pydantic.Field(default_factory=lambda: [])
 
 
-class Spreadsheet(BaseModel):
+class Spreadsheet(pydantic.BaseModel):
     """Response for spreadsheets().get().
 
     See Also:
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets#Spreadsheet.
     """
 
-    model_config = ConfigDict(extra='ignore')
+    model_config = pydantic.ConfigDict(extra='ignore')
 
     spreadsheetId: str
-    sheets: list[Sheet] = Field(default_factory=lambda: [])
-    namedRanges: list[NamedRange] = Field(default_factory=lambda: [])
+    sheets: list[Sheet] = pydantic.Field(default_factory=lambda: [])
+    namedRanges: list[NamedRange] = pydantic.Field(default_factory=lambda: [])
 
 
 # Converter function from Row to Dict.
